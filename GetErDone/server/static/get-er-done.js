@@ -19,6 +19,7 @@ $(function(){
 
     });
 
+    var rem = {};
 
     // GetErDone Task Collection
     var GetErDoneTaskList = Backbone.Collection.extend({
@@ -117,14 +118,14 @@ $(function(){
 	statsTemplate: _.template($('#stats-template').html()),
 
 	events: {
-	    "keypress #new-todo":  "createOnEnter",
+	    "keypress #new-self-task":  "createOnEnter",
 	    "click #clear-completed": "clearCompleted",
 	    "click #toggle-all": "toggleAllComplete"
 	},
 
 	initialize: function() {
 
-	    this.input = this.$("#new-todo");
+	    this.input = this.$("#new-self-task");
 	    this.allCheckbox = this.$("#toggle-all")[0];
 
 	    this.listenTo(GetErDoneTasks, 'add', this.addOne);
@@ -155,7 +156,7 @@ $(function(){
 
 	addOne: function(task) {
 	    var view = new GetErDoneTaskView({model: task});
-	    this.$("#todo-list").append(view.render().el);
+	    this.$("#get-er-done-spa-list").append(view.render().el);
 	},
 
 	addAll: function() {
