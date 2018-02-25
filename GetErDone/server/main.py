@@ -8,7 +8,7 @@ import tempfile
 import logging
 
 import flask
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 
 # initial setup for flask
 app = Flask(__name__)
@@ -46,7 +46,7 @@ def task_store():
 
 
 # fetch a task
-@app.route('/fetch/<oid:task_id>')
+@app.route('/fetch/<uuid:task_id>')
 def task_fetch(task_id):
 
     content = None
@@ -61,12 +61,15 @@ def task_fetch(task_id):
 
 
 # delete a task
-@app.route('/delete/<oid:task_id>')
+@app.route('/delete/<uuid:task_id>')
 def task_delete():
     rc = 1
     logger.debug("delete task %s" % (task_id))
     return(rc)
 
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 def main():
 
