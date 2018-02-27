@@ -108,6 +108,14 @@ body {
     padding: 0;
 }
 
+#get-er-done-spa-list li.high-priority {
+    background-color: #FF0000;
+}
+
+#get-er-done-spa-list li.low-priority {
+    background-color: #808000;
+}
+
 #get-er-done-spa-list li.editing:last-child {
     margin-bottom: -1px;
 }

@@ -48,6 +48,11 @@
     <script type="text/template" id="item-template">
       <div class="view">
 	<input class="toggle" type="checkbox" <%= done ? 'checked="checked"' : '' %> />
+	<select class="choosePriority" name="priority">
+            <option value="normal" <%= priority === "normal" ? 'selected="true"' : '' %> >normal</option>
+            <option value="high" <%= priority === "high" ? 'selected="true"' : '' %> >high</option>
+            <option value="low" <%= priority === "low" ? 'selected="true"' : '' %> >low</option>
+        </select>
 	<label><%- title %></label>
 	<a class="destroy"></a>
       </div>

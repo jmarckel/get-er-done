@@ -1,6 +1,5 @@
 $(function(){
 
-
     // GetErDone Task Model
     var GetErDoneTask = Backbone.Model.extend({
 
@@ -8,6 +7,7 @@ $(function(){
 	defaults: function() {
 	    return {
 		title: "empty task...",
+		priority: "normal",
 		order: GetErDoneTasks.nextOrder(),
 		done: false
 	    };
@@ -62,11 +62,12 @@ $(function(){
 	template: _.template($('#item-template').html()),
 
 	events: {
-	    "click .toggle"   : "toggleDone",
-	    "dblclick .view"  : "edit",
+	    "click .toggle" : "toggleDone",
+	    "change .choosePriority" : "setPriority",
+	    "dblclick .view" : "edit",
 	    "click a.destroy" : "clear",
-	    "keypress .edit"  : "updateOnEnter",
-	    "blur .edit"      : "close"
+	    "keypress .edit" : "updateOnEnter",
+	    "blur .edit" : "close"
 	},
 
 	initialize: function() {
@@ -78,11 +79,21 @@ $(function(){
 	    this.$el.html(this.template(this.model.toJSON()));
 	    this.$el.toggleClass('done', this.model.get('done'));
 	    this.input = this.$('.edit');
+	    this.priority = this.$('.choosePriority');
 	    return this;
 	},
 
 	toggleDone: function() {
 	    this.model.toggle();
+	},
+
+	setPriority: function() {
+	    var value = this.priority.val();
+            console.log( "priority: " + value);
+	    if (!value) {
+		value = "normal";
+	    }
+            this.model.save({priority: value});
 	},
 
 	edit: function() {
