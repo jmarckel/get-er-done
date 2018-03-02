@@ -3,12 +3,15 @@
 # GetErDone!!!
 
 import argparse
+import json
+import logging
 import os
 import tempfile
-import logging
 
 import flask
 from flask import Flask, request, jsonify, render_template
+
+from . import Storage
 
 # initial setup for flask
 app = Flask(__name__)
@@ -28,48 +31,92 @@ fileLogger = logging.FileHandler('server.log')
 fileLogger.setFormatter(fmt)
 logger.addHandler(fileLogger)
 
+user_id = 'jeff'
 
-# store a task
-@app.route('/store', methods=['POST'])
-def task_store():
 
-    logger.debug('in store()')
+@app.route('/tasks', methods=['POST', 'GET', 'DELETE'])
+def task_list_handler():
+
+    response = None
 
     if(request.method == 'POST'):
-        pass
+        logger.debug('add a new task')
+        logger.info(request.headers['Content-Type'])
+        if(request.headers['Content-Type'] == 'application/json'):
+            logger.info("json: " + json.dumps(request.json))
+            try:
+                request.json['assign_to'] = user_id
+                Storage.store(user_id, request.json)
+                response = app.make_response('OK')
+                response.status_code = 200
+            except(Storage.StorageException) as e:
+                response = app.make_response(e.message)
+                response.status_code = 500
+        else:
+            logger.info("http")
 
-    logger.info('%s stored %s' % (task_id, status))
+    elif(request.method == 'GET'):
+        logger.debug('list all tasks')
+        try:
+            content = Storage.fetch_all(user_id)
+            response = jsonify(content)
+            response.status_code = 200
+        except(Storage.StorageException) as e:
+            response = app.make_response(e.message)
+            response.status_code = 500
 
-    content = {"status": status, "task_id": task_id, "message": message}
+    elif(request.method == 'DELETE'):
+        logger.debug('delete all tasks')
+        if(request.headers['Content-Type'] == 'application/json'):
+            try:
+                content = Storage.delete_all(user_id)
+                response = jsonify(content)
+                response.status_code = 200
+            except(Storage.StorageException) as e:
+                response = app.make_response(e.message)
+                response.status_code = 500
+        else:
+            logger.info("http")
+    else:
+        content = app.make_response(404)
 
-    return(jsonify(content), 201, {'Content-Type': 'application/json'})
+    return(response)
 
 
-# fetch a task
-@app.route('/fetch/<uuid:task_id>')
-def task_fetch(task_id):
+@app.route('/tasks/<uuid:task_id>', methods=['PUT', 'GET', 'DELETE'])
+def task_handler():
 
     content = None
 
-    if(request.method == 'GET'):
-        pass
+    if(request.method == 'PUT'):
+        logger.debug('update task %s' % (task_id))
+        if(request.headers['Content-Type'] == 'application/json'):
+            try:
+                Storage.store(user_id, request.json)
+                response = app.make_response('OK')
+                response.status_code = 200
+            except(Storage.StorageException) as e:
+                response = app.make_response(e.message)
+                response.status_code = 500
+        else:
+            logger.info("http")
 
-    if(content is None):
+    elif(request.method == 'GET'):
+        logger.debug('get task %s' % (task_id))
+
+    elif(request.method == 'DELETE'):
+        logger.debug('delete task %s' % (task_id))
+
+    else:
         content = app.make_response(404)
 
-    return(content)
+    return(response)
 
-
-# delete a task
-@app.route('/delete/<uuid:task_id>')
-def task_delete():
-    rc = 1
-    logger.debug("delete task %s" % (task_id))
-    return(rc)
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 def main():
 

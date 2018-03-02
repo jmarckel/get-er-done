@@ -28,7 +28,8 @@ $(function(){
 	model: GetErDoneTask,
 
 	// Save all of the tasks under the `"tasks-backbone"` namespace.
-	localStorage: new Backbone.LocalStorage("tasks-backbone"),
+	// localStorage: new Backbone.LocalStorage("tasks-backbone"),
+        url: "/tasks",
 
 	// Filter down the list of all tasks that are finished.
 	done: function() {
