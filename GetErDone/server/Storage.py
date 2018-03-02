@@ -52,17 +52,17 @@ def fetch(user_id, data):
 
     for row in c.execute("SELECT task_id, title, priority, done FROM tasks where user_id = ? AND task_id = ? and status = 'ACTIVE'", (user_id, data.order,)):
 
-        data['order'] = row[0]
-        data['title'] = row[1]
-        data['priority'] = row[2]
+        reply['order'] = row[0]
+        reply['title'] = row[1]
+        reply['priority'] = row[2]
         if(row[3] == 1):
-            data['done'] = True
+            reply['done'] = True
         else:
-            data['done'] = False
+            reply['done'] = False
 
     conn.close()
 
-    return data
+    return reply
 
 
 def fetch_all(user_id):
@@ -75,7 +75,7 @@ def fetch_all(user_id):
 
     c = conn.cursor()
 
-    for row in c.execute('SELECT task_id, title, priority, done FROM tasks where user_id = ? and status = "ACTIVE"', (user_id,)):
+    for row in c.execute('SELECT task_id, title, priority, done FROM tasks where user_id = ? and status = "ACTIVE" order by task_id', (user_id,)):
 
         task = {}
 
@@ -127,6 +127,7 @@ def store(user_id, data):
 
     conn = sqlite3.connect(databaseName)
     c = conn.cursor()
+    c.execute("UPDATE tasks SET status = ?, status_dt = ? WHERE task_id = ? and user_id = ?", ('HISTORY', stor_dt, data['order'], user_id,))
     c.execute("INSERT INTO tasks (user_id, task_id, title, priority, done, status, status_dt, create_dt, assigned_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
               (data['assign_to'], data['order'], data['title'], data['priority'], done_status, 'ACTIVE', stor_dt, stor_dt, user_id,))
     conn.commit()
