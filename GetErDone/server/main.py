@@ -26,10 +26,6 @@ logger.setLevel(logging.INFO)
 
 fmt = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
 
-consoleLogger = logging.StreamHandler()
-consoleLogger.setFormatter(fmt)
-logger.addHandler(consoleLogger)
-
 fileLogger = logging.FileHandler(os.path.join(app_logdir, 'server.log'))
 fileLogger.setFormatter(fmt)
 logger.addHandler(fileLogger)
@@ -133,4 +129,12 @@ def main():
     if(args.verbose):
         logger.setLevel(logging.DEBUG)
 
+    consoleLogger = logging.StreamHandler()
+    consoleLogger.setFormatter(fmt)
+    logger.addHandler(consoleLogger)
+
     app.run()
+
+
+if __name__ == "__main__":
+    main()
