@@ -44,4 +44,3 @@ Edit /etc/apache2/sites-enabled/techex.epoxyloaf.com.conf
         Require all granted
     </directory>
 </virtualhost>
-

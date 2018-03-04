@@ -33,49 +33,177 @@ logger.addHandler(fileLogger)
 user_id = 'jeff'
 
 
-@app.route('/tasks', methods=['POST', 'GET', 'DELETE'])
-def task_list_handler():
+#
+# code associated with a list of tasks
+#
+
+def task_list_json_delete_handler():
+
+    response = None
+
+    try:
+        content = Storage.delete_all(user_id)
+        response = jsonify(content)
+        response.status_code = 200
+    except(Storage.StorageException) as e:
+        response = app.make_response(e.message)
+        response.status_code = 500
+
+    return(response)
+
+
+def task_list_json_get_handler():
+
+    response = None
+
+    try:
+        content = Storage.fetch_all(user_id)
+        response = jsonify(content)
+        response.status_code = 200
+    except(Storage.StorageException) as e:
+        response = app.make_response(e.message)
+        response.status_code = 500
+
+    return(response)
+
+
+def task_list_json_post_handler():
+
+    response = None
+
+    logger.debug("json post: " + json.dumps(request.json))
+
+    try:
+        request.json['assign_to'] = user_id
+        Storage.store(user_id, request.json)
+        response = app.make_response('OK')
+        response.status_code = 200
+    except(Storage.StorageException) as e:
+        response = app.make_response(e.message)
+        response.status_code = 500
+
+    return(response)
+
+
+def task_list_json_handler():
 
     response = None
 
     if(request.method == 'POST'):
         logger.debug('add a new task')
-        logger.info(request.headers['Content-Type'])
-        if(request.headers['Content-Type'] == 'application/json'):
-            logger.info("json: " + json.dumps(request.json))
-            try:
-                request.json['assign_to'] = user_id
-                Storage.store(user_id, request.json)
-                response = app.make_response('OK')
-                response.status_code = 200
-            except(Storage.StorageException) as e:
-                response = app.make_response(e.message)
-                response.status_code = 500
-        else:
-            logger.info("http")
+        response = task_list_json_post_handler()
 
     elif(request.method == 'GET'):
         logger.debug('list all tasks')
-        try:
-            content = Storage.fetch_all(user_id)
-            response = jsonify(content)
-            response.status_code = 200
-        except(Storage.StorageException) as e:
-            response = app.make_response(e.message)
-            response.status_code = 500
+        response = task_list_json_get_handler()
 
     elif(request.method == 'DELETE'):
         logger.debug('delete all tasks')
-        if(request.headers['Content-Type'] == 'application/json'):
-            try:
-                content = Storage.delete_all(user_id)
-                response = jsonify(content)
-                response.status_code = 200
-            except(Storage.StorageException) as e:
-                response = app.make_response(e.message)
-                response.status_code = 500
-        else:
-            logger.info("http")
+        response = task_list_json_delete_handler()
+
+    else:
+        response = app.make_response(404)
+
+    return(response)
+
+
+def task_list_html_handler():
+
+    return render_template('get-er-assigned.html')
+
+
+@app.route('/tasks', methods=['POST', 'GET', 'DELETE'])
+def task_list_handler():
+
+    response = None
+
+    if(request.headers['Content-Type'] == 'application/json'):
+        response = task_list_json_handler()
+    else:
+        response = task_list_html_handler()
+    else:
+        response = app.make_response(404)
+
+    return(response)
+
+
+#
+# code associated with individual tasks
+#
+
+def task_json_put_handler():
+
+    response = None
+
+    try:
+        Storage.store(user_id, request.json)
+        response = app.make_response('OK')
+        response.status_code = 200
+    except(Storage.StorageException) as e:
+        response = app.make_response(e.message)
+        response.status_code = 500
+
+    return(response)
+
+
+def task_json_get_handler():
+
+    response = None
+
+    return(response)
+
+
+def task_json_delete_handler():
+
+    response = None
+
+    return(response)
+
+
+def task_json_handler():
+
+    response = None
+
+    return(response)
+
+
+def task_html_put_handler():
+
+    response = None
+
+    return(response)
+
+
+def task_html_get_handler():
+
+    response = None
+
+    return(response)
+
+
+def task_html_delete_handler():
+
+    response = None
+
+    return(response)
+
+
+def task_html_handler():
+
+    response = None
+
+    if(request.method == 'PUT'):
+        logger.debug('html update task %s' % (task_id))
+        response = task_html_put_handler()
+
+    elif(request.method == 'GET'):
+        logger.debug('html get task %s' % (task_id))
+        response = task_html_get_handler()
+
+    elif(request.method == 'DELETE'):
+        logger.debug('html delete task %s' % (task_id))
+        response = task_html_delete_handler()
+
     else:
         content = app.make_response(404)
 
@@ -85,29 +213,12 @@ def task_list_handler():
 @app.route('/tasks/<uuid:task_id>', methods=['PUT', 'GET', 'DELETE'])
 def task_handler():
 
-    content = None
+    response = None
 
-    if(request.method == 'PUT'):
-        logger.debug('update task %s' % (task_id))
-        if(request.headers['Content-Type'] == 'application/json'):
-            try:
-                Storage.store(user_id, request.json)
-                response = app.make_response('OK')
-                response.status_code = 200
-            except(Storage.StorageException) as e:
-                response = app.make_response(e.message)
-                response.status_code = 500
-        else:
-            logger.info("http")
-
-    elif(request.method == 'GET'):
-        logger.debug('get task %s' % (task_id))
-
-    elif(request.method == 'DELETE'):
-        logger.debug('delete task %s' % (task_id))
-
+    if(request.headers['Content-Type'] == 'application/json'):
+        task_json_handler()
     else:
-        content = app.make_response(404)
+        task_html_handler()
 
     return(response)
 
