@@ -9,8 +9,12 @@ import time
 
 logger = logging.getLogger('server')
 
+app_root = os.path.dirname(__file__)
+app_dbdir = os.path.join(app_root, '../../../runtime')
 
-databaseName = "get_er_done.sql3"
+databaseName = os.path.join(app_dbdir, "get_er_done.sql3")
+
+logger.info('db is %s' % (databaseName))
 
 class StorageException(Exception):
     def __init__(message):

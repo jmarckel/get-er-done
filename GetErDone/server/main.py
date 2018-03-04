@@ -16,6 +16,9 @@ from . import Storage
 # initial setup for flask
 app = Flask(__name__)
 
+app_root = os.path.dirname(__file__)
+app_logdir = os.path.join(app_root, '../../../runtime')
+
 
 # configure logging
 logger = logging.getLogger('server')
@@ -27,7 +30,7 @@ consoleLogger = logging.StreamHandler()
 consoleLogger.setFormatter(fmt)
 logger.addHandler(consoleLogger)
 
-fileLogger = logging.FileHandler('server.log')
+fileLogger = logging.FileHandler(os.path.join(app_logdir, 'server.log'))
 fileLogger.setFormatter(fmt)
 logger.addHandler(fileLogger)
 

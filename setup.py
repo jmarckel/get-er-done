@@ -37,7 +37,8 @@ setup(
     packages = find_packages(exclude = ['contrib', 'docs', 'tests']),
 
     include_package_data=True,
-    data_files = ['static', ['static/*']],
+
+    install_requires = ['Flask', 'jinja2'],
 
     entry_points = {
         'console_scripts': [
