@@ -20,6 +20,14 @@
 	<input id="toggle-all" type="checkbox">
 	<label for="toggle-all">Mark all complete</label>
 	<ul id="get-er-assigned-list"></ul>
+        <% for task in data: %>
+        <li>
+          <% data['priority] %>
+          <% data['title] %>
+          <% data['assigned_to] %>
+          <% data['done] %>
+        </li>
+        <% endfor %>
       </section>
 
     </div>

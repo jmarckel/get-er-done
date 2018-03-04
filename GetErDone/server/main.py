@@ -109,7 +109,7 @@ def task_list_json_handler():
 
 def task_list_html_handler():
 
-    return render_template('get-er-assigned.html')
+    return render_template('get-er-assigned.html', data = Storage.fetch_all(user_id))
 
 
 @app.route('/tasks', methods=['POST', 'GET', 'DELETE'])
@@ -117,12 +117,9 @@ def task_list_handler():
 
     response = None
 
-    if(request.headers['Content-Type'] == 'application/json'):
-        response = task_list_json_handler()
-    else:
-        response = task_list_html_handler()
-    else:
-        response = app.make_response(404)
+    logger.debug('headers: %s' % (request.headers))
+
+    response = task_list_json_handler()
 
     return(response)
 
