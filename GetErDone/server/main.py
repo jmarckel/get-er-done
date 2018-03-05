@@ -6,6 +6,7 @@ import argparse
 import json
 import logging
 import os
+import re
 import stat
 import tempfile
 
@@ -110,7 +111,8 @@ def task_list_json_handler():
         response = task_list_json_delete_handler()
 
     else:
-        response = app.make_response(404)
+        response = app.make_response('forbidden')
+        response.status_code = 500
 
     return(response)
 
@@ -125,9 +127,12 @@ def task_list_handler():
 
     response = None
 
-    logger.debug('headers: %s' % (request.headers))
-
-    response = task_list_json_handler()
+    if('username' in session):
+        logger.debug('headers: %s' % (request.headers))
+        response = task_list_json_handler()
+    else:
+        response = app.make_response('forbidden')
+        response.status_code = 500
 
     return(response)
 
@@ -210,7 +215,8 @@ def task_html_handler():
         response = task_html_delete_handler()
 
     else:
-        content = app.make_response(404)
+        response = app.make_response('forbidden')
+        response.status_code = 500
 
     return(response)
 
@@ -233,15 +239,22 @@ def login():
     if(request.method == 'POST'):
         if('username' in request.form):
             logger.info("we have login for user %s" % (request.form['username']))
-            session['username'] = request.form['username']
-            return redirect(url_for('index'))
+            proposed_username = request.form['username']
+            m = re.match('\A([A-Za-z0-9]+)\Z', proposed_username)
+            if(m and m.group(0) == proposed_username):
+                session['username'] = request.form['username']
+                return redirect(url_for('index'))
+            else:
+                return render_template('login.html', greeting='illegal chars in username')
    
     return render_template('login.html')
 
 
 @app.route('/logout')
 def logout():
-    session.pop('username', None)
+    if('username' in session):
+        logger.info("we have logout for user %s" % (session['username']))
+        session.pop('username', None)
     return redirect(url_for('index'))
 
 
