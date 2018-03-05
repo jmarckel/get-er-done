@@ -6,10 +6,11 @@ import argparse
 import json
 import logging
 import os
+import stat
 import tempfile
 
 import flask
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, redirect, request, session, jsonify, render_template, url_for
 
 from . import Storage
 
@@ -17,7 +18,16 @@ from . import Storage
 app = Flask(__name__)
 
 app_root = os.path.dirname(__file__)
-app_logdir = os.path.join(app_root, '../../../runtime')
+app_runtime = os.path.join(app_root, '../../../runtime')
+
+site_keyfile = os.path.join(app_runtime, 'site.key')
+if(not os.path.exists(site_keyfile)):
+    with open(site_keyfile, "w+b") as keyfile:
+        keyfile.write(os.urandom(24))
+    os.chmod(site_keyfile, stat.S_IRUSR)
+
+with open(site_keyfile, "rb") as keyfile:
+    app.secret_key = keyfile.read()
 
 
 # configure logging
@@ -26,11 +36,9 @@ logger.setLevel(logging.INFO)
 
 fmt = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
 
-fileLogger = logging.FileHandler(os.path.join(app_logdir, 'server.log'))
+fileLogger = logging.FileHandler(os.path.join(app_runtime, 'server.log'))
 fileLogger.setFormatter(fmt)
 logger.addHandler(fileLogger)
-
-user_id = 'jeff'
 
 
 #
@@ -42,7 +50,7 @@ def task_list_json_delete_handler():
     response = None
 
     try:
-        content = Storage.delete_all(user_id)
+        content = Storage.delete_all(session['username'])
         response = jsonify(content)
         response.status_code = 200
     except(Storage.StorageException) as e:
@@ -57,7 +65,7 @@ def task_list_json_get_handler():
     response = None
 
     try:
-        content = Storage.fetch_all(user_id)
+        content = Storage.fetch_all(session['username'])
         response = jsonify(content)
         response.status_code = 200
     except(Storage.StorageException) as e:
@@ -74,8 +82,8 @@ def task_list_json_post_handler():
     logger.debug("json post: " + json.dumps(request.json))
 
     try:
-        request.json['assign_to'] = user_id
-        Storage.store(user_id, request.json)
+        request.json['assign_to'] = session['username']
+        Storage.store(session['username'], request.json)
         response = app.make_response('OK')
         response.status_code = 200
     except(Storage.StorageException) as e:
@@ -109,7 +117,7 @@ def task_list_json_handler():
 
 def task_list_html_handler():
 
-    return render_template('get-er-assigned.html', data = Storage.fetch_all(user_id))
+    return render_template('get-er-assigned.html', data = Storage.fetch_all(session['username']))
 
 
 @app.route('/tasks', methods=['POST', 'GET', 'DELETE'])
@@ -133,7 +141,7 @@ def task_json_put_handler():
     response = None
 
     try:
-        Storage.store(user_id, request.json)
+        Storage.store(session['username'], request.json)
         response = app.make_response('OK')
         response.status_code = 200
     except(Storage.StorageException) as e:
@@ -220,9 +228,32 @@ def task_handler():
     return(response)
 
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if(request.method == 'POST'):
+        if('username' in request.form):
+            logger.info("we have login for user %s" % (request.form['username']))
+            session['username'] = request.form['username']
+            return redirect(url_for('index'))
+   
+    return render_template('login.html')
+
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('index'))
+
+
 @app.route('/')
 def index():
-    return render_template('index.html')
+    if('username' in session):
+        logger.info("index for user %s" % (session['username']))
+        return render_template('index.html')
+    else:
+        logger.info("index for unknown user, will redirect...")
+   
+    return redirect(url_for('login'))
 
 
 def main():
