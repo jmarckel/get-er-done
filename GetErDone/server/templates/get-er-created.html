@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Get Er Assigned!</title>
+    <link rel="stylesheet" href="/static/get-er-done.css"/>
+  </head>
+  <body>
+    <div id="get-er-assigned">
+    <header>
+      <h1>New Task</h1>
+    </header>
+    <form method='POST'>
+    <table>
+      <tr>
+        <td>priority</td>
+        <td>
+           <select name='priority'>
+               <option value='normal'>normal</option>
+               <option value='high'>high</option>
+               <option value='low'>low</option>
+           </select>
+        </td>
+      </tr>
+      <tr>
+        <td>title</td>
+        <td>
+          <input type='text' name='title'>
+        </td>
+      </tr>
+      <tr>
+        <td>assign to</td>
+        <td>
+           <select name='assigned'>
+             {% for user in users %}
+               <option value='{{ user.name }}'>{{ user.name }}</option>
+             {% endfor %}
+           </select>
+        </td>
+      </tr>
+    </table>
+    <input type='submit' value='Create'/>
+    </form>
+    </div>
+  </body>
+</html>

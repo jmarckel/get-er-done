@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <title>Get Login Done!</title>
+    <link rel="stylesheet" href="/static/get-er-done.css"/>
+  </head>
+
+  <body>
+
+    <div id="get-er-done-spa">
+
+      <form method='POST'>
+        <header>
+	  <h1>Login here to Get Er Done!</h1>
+          {% if greeting %} 
+          <h1> {{greeting}} </h1>
+          {% endif %}
+	  <input type="text" name='username' placeholder="user name">
+	  <input type="submit" value='Login'>
+        </header>
+      </form>
+
+    </div>
+  </body>
+</html>

@@ -258,6 +258,26 @@ def logout():
     return redirect(url_for('index'))
 
 
+@app.route('/assigned')
+def assigned():
+    if('username' in session):
+        logger.info("switch to assign for user %s" % (session['username']))
+        return render_template('get-er-assigned.html', 
+                               tasks = Storage.fetch_assigned(session['username']))
+
+    return redirect(url_for('index'))
+
+
+@app.route('/create', methods=['POST', 'GET'])
+def create():
+    if('username' in session):
+        logger.info("switch to create for user %s" % (session['username']))
+        return render_template('get-er-created.html', 
+                               users = Storage.fetch_users(session['username']))
+
+    return redirect(url_for('index'))
+
+
 @app.route('/')
 def index():
     if('username' in session):

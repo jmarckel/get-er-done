@@ -1,35 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-
   <head>
     <meta charset="utf-8">
     <title>Get Er Assigned!</title>
     <link rel="stylesheet" href="/static/get-er-done.css"/>
   </head>
-
   <body>
-
     <div id="get-er-assigned">
-
-      <header>
-	<h1>Assigned Tasks</h1>
-	<input id="new-assigned-task" type="text" placeholder="New task">
-      </header>
-
-      <section id="main">
-	<input id="toggle-all" type="checkbox">
-	<label for="toggle-all">Mark all complete</label>
-	<ul id="get-er-assigned-list"></ul>
-        <% for task in data: %>
-        <li>
-          <% data['priority] %>
-          <% data['title] %>
-          <% data['assigned_to] %>
-          <% data['done] %>
-        </li>
-        <% endfor %>
-      </section>
-
+    <header>
+      <h1>Tasks Assigned</h1>
+    </header>
+    <table>
+      <tr>
+        <th>user id</th>
+        <th>task id</th>
+        <th>title</th>
+        <th>priority id</th>
+        <th>status</th>
+      </tr>
+      {% for task in tasks %}
+      <tr>
+        <td>{{ task.user_id }}</td>
+        <td>{{ task.order }}</td>
+        <td>{{ task.title }}</td>
+        <td>{{ task.priority }}</td>
+        <td>{{ task.done }}</td>
+        </tr>
+      {% endfor %}
+    </table>
     </div>
   </body>
 </html>

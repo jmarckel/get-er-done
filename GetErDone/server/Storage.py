@@ -69,6 +69,35 @@ def fetch(user_id, data):
     return reply
 
 
+def fetch_assigned(user_id):
+
+    setup()
+
+    reply = []
+
+    conn = sqlite3.connect(databaseName)
+
+    c = conn.cursor()
+
+    for row in c.execute('SELECT task_id, title, priority, done, user_id FROM tasks where assigned_by = ? and status = "ACTIVE" order by task_id', (user_id,)):
+
+        task = {}
+
+        task['order'] = row[0]
+        task['title'] = row[1]
+        task['priority'] = row[2]
+        if(row[3] == 1):
+            task['done'] = True
+        else:
+            task['done'] = False
+        task['user_id'] = row[4]
+
+        reply.append(task)
+
+    conn.close()
+
+    return reply
+
 def fetch_all(user_id):
 
     setup()
@@ -92,6 +121,27 @@ def fetch_all(user_id):
             task['done'] = False
 
         reply.append(task)
+
+    conn.close()
+
+    return reply
+
+
+
+def fetch_users(user_id):
+
+    setup()
+
+    reply = []
+
+    conn = sqlite3.connect(databaseName)
+
+    c = conn.cursor()
+
+    for row in c.execute('SELECT distinct user_id FROM tasks where user_id != ? order by user_id', (user_id,)):
+        user = {}
+        user['name'] = row[0]
+        reply.append(user)
 
     conn.close()
 
