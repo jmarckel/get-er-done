@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="/static/get-er-done.css"/>
   </head>
   <body>
-    <div id="get-er-assigned">
     <header>
       <h1>Tasks Assigned</h1>
     </header>
@@ -25,9 +24,8 @@
         <td>{{ task.title }}</td>
         <td>{{ task.priority }}</td>
         <td>{{ task.done }}</td>
-        </tr>
+      </tr>
       {% endfor %}
     </table>
-    </div>
   </body>
 </html>

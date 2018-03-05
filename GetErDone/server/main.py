@@ -117,11 +117,6 @@ def task_list_json_handler():
     return(response)
 
 
-def task_list_html_handler():
-
-    return render_template('get-er-assigned.html', data = Storage.fetch_all(session['username']))
-
-
 @app.route('/tasks', methods=['POST', 'GET', 'DELETE'])
 def task_list_handler():
 
@@ -152,48 +147,6 @@ def task_json_put_handler():
     except(Storage.StorageException) as e:
         response = app.make_response(e.message)
         response.status_code = 500
-
-    return(response)
-
-
-def task_json_get_handler():
-
-    response = None
-
-    return(response)
-
-
-def task_json_delete_handler():
-
-    response = None
-
-    return(response)
-
-
-def task_json_handler():
-
-    response = None
-
-    return(response)
-
-
-def task_html_put_handler():
-
-    response = None
-
-    return(response)
-
-
-def task_html_get_handler():
-
-    response = None
-
-    return(response)
-
-
-def task_html_delete_handler():
-
-    response = None
 
     return(response)
 
@@ -271,9 +224,13 @@ def assigned():
 @app.route('/create', methods=['POST', 'GET'])
 def create():
     if('username' in session):
-        logger.info("switch to create for user %s" % (session['username']))
-        return render_template('get-er-created.html', 
-                               users = Storage.fetch_users(session['username']))
+        if(request.method == 'POST'):
+            logger.info('create task')
+            return redirect(url_for('assigned'))
+        else:
+            logger.info("switch to create for user %s" % (session['username']))
+            return render_template('get-er-created.html', 
+                                   users = Storage.fetch_users(session['username']))
 
     return redirect(url_for('index'))
 
