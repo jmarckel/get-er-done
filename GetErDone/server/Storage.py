@@ -38,7 +38,7 @@ def delete_all(user_id, data):
 
     conn = sqlite3.connect(databaseName)
     c = conn.cursor()
-    c.execute("DELETE FROM tasks where user_id = ? and task_id = ?", (user_id, data.order))
+    c.execute("DELETE FROM tasks where user_id = ?", (user_id))
     conn.commit()
     conn.close()
 
