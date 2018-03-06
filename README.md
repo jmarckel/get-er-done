@@ -1,3 +1,12 @@
+# GetErDone
+
+Work in progress here...
+
+This is a technical exercise where I am building an application suite using a
+mix of technologies to demonstrate the integration of external authentication
+and authorization workflows into web based API and site.
+
+Flask, Jinja2, Backbone.js, Auth0, OpenID Connect
 
 
 ## To run out of a dev sandbox on localhost
@@ -10,7 +19,7 @@ cd install-test
 tar -zxf ../get-er-done/dist/GetErDone-0.0.1.linux-x86_64.tar.gz
 
 # need to figure out a better way for config of runtime path, but this worked...
-mkdir /home/jmarckel/work/auth0/techex/install/usr/local/lib/python3.5/runtime
+mkdir ./usr/local/lib/python3.5/runtime
 
 PYTHONPATH=./usr/local/lib/python3.5/dist-packages/ ./usr/local/bin/GetErDone-server 
 ```
