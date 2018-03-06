@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="/static/get-er-done.css"/>
   </head>
   <body>
+    <a href='/logout'>logout</a>
+    <a href='/'>my tasks</a>
     <header>
       <h1>Tasks Assigned</h1>
     </header>
@@ -21,7 +23,7 @@
       {% for task in tasks %}
       <tr>
         <td>{{ task.user_id }}</td>
-        <td>{{ task.order }}</td>
+        <td align='right'>{{ task.order }}</td>
         <td>{{ task.title }}</td>
         <td>{{ task.priority }}</td>
         <td>{{ task.done }}</td>

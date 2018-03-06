@@ -3,12 +3,14 @@
 # GetErDone!!!
 
 import argparse
+import calendar
 import json
 import logging
 import os
 import re
 import stat
 import tempfile
+import time
 
 import flask
 from flask import Flask, redirect, request, session, jsonify, render_template, url_for
@@ -189,6 +191,7 @@ def task_handler():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+
     if(request.method == 'POST'):
         if('username' in request.form):
             logger.info("we have login for user %s" % (request.form['username']))
@@ -205,9 +208,11 @@ def login():
 
 @app.route('/logout')
 def logout():
+
     if('username' in session):
         logger.info("we have logout for user %s" % (session['username']))
         session.pop('username', None)
+
     return redirect(url_for('index'))
 
 
@@ -226,6 +231,14 @@ def create():
     if('username' in session):
         if(request.method == 'POST'):
             logger.info('create task')
+            data = {}
+            data['done'] = False
+            data['order'] = calendar.timegm(time.gmtime())
+            data['title'] = request.form['title']
+            data['priority'] = request.form['priority']
+            data['assign_to'] = request.form['assigned']
+            Storage.store(session['username'], data)
+            
             return redirect(url_for('assigned'))
         else:
             logger.info("switch to create for user %s" % (session['username']))

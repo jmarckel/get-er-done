@@ -1,6 +1,5 @@
 $(function(){
 
-    // GetErDone Task Model
     var GetErDoneTask = Backbone.Model.extend({
 
 	// default values for an empty task
@@ -21,34 +20,26 @@ $(function(){
 
     var rem = {};
 
-    // GetErDone Task Collection
     var GetErDoneTaskList = Backbone.Collection.extend({
 
-	// Reference to this collection's model.
 	model: GetErDoneTask,
 
-	// Save all of the tasks under the `"tasks-backbone"` namespace.
-	// localStorage: new Backbone.LocalStorage("tasks-backbone"),
         url: "/tasks",
 
-	// Filter down the list of all tasks that are finished.
 	done: function() {
 	    return this.where({done: true});
 	},
 
-	// Filter down the list to only tasks that are still not finished.
 	remaining: function() {
 	    return this.where({done: false});
 	},
 
-	// We keep the GetErDoneTasks in sequential order, despite being saved by unordered
-	// GUID in the database. This generates the next order number for new items.
 	nextOrder: function() {
-	    if (!this.length) return 1;
-	    return this.last().get('order') + 1;
+            var d = new Date();
+            var seconds = Math.round(d.getTime() / 1000);
+            return(seconds)
 	},
 
-	// GetErDoneTasks are sorted by their original insertion order.
 	comparator: 'order'
 
     });
