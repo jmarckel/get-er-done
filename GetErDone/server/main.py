@@ -18,6 +18,8 @@ import flask
 from flask import Flask, redirect, request, session, jsonify, render_template, url_for, _request_ctx_stack
 from flask_cors import cross_origin
 
+from flask_oauthlib.client import OAuth
+
 import jwt
 from six.moves.urllib.request import urlopen
 
@@ -36,8 +38,15 @@ if(not os.path.exists(site_keyfile)):
         keyfile.write(os.urandom(24))
     os.chmod(site_keyfile, stat.S_IRUSR)
 
+# read the secret key
 with open(site_keyfile, "rb") as keyfile:
     app.secret_key = keyfile.read()
+
+# load the auth configuration
+auth_config = None
+auth_config_file = os.path.join(app_runtime, 'get-er-done-config.json')
+with open(auth_config_file, 'r') as cfgfile:
+    auth_config = json.loads(cfgfile.read())
 
 
 # configure logging
@@ -54,10 +63,6 @@ logger.addHandler(fileLogger)
 #
 # auth code
 #
-AUTH0_DOMAIN = 'techex-epoxyloaf-com.auth0.com'
-AUTH0_AUDIENCE = 'http://techex.epoxyloaf.com/'
-
-ALGORITHMS = ["RS256"]
 
 # Format error response and append status code.
 class AuthError(Exception):
@@ -123,7 +128,7 @@ def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = get_token_auth_header()
-        jsonurl = urlopen("https://"+AUTH0_DOMAIN+"/.well-known/jwks.json")
+        jsonurl = urlopen("https://" + auth_config['auth0_domain'] + "/.well-known/jwks.json")
         jwks = json.loads(jsonurl.read())
         try:
             unverified_header = jwt.get_unverified_header(token)
@@ -155,9 +160,9 @@ def requires_auth(f):
                 payload = jwt.decode(
                     token,
                     rsa_key,
-                    algorithms=ALGORITHMS,
-                    audience=AUTH0_AUDIENCE,
-                    issuer="https://"+AUTH0_DOMAIN+"/"
+                    algorithms = site_config['algorithms'],
+                    audience = auth_config['auth0_audience'],
+                    issuer = "https://" + auth_config['auth0_domain'] + "/"
                 )
             except jwt.ExpiredSignatureError:
                 raise AuthError({"code": "token_expired",

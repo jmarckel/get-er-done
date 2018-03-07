@@ -209,18 +209,11 @@ $(function(){
 
     var loginStatus = $('.container h4');
     var loginView = $('#login-view');
-    var homeView = $('#home-view');
     var getErDoneAppView = $('#get-er-done-spa-view');
 
     // buttons and event listeners
-    var homeViewBtn = $('#btn-home-view');
     var loginBtn = $('#btn-login');
     var logoutBtn = $('#btn-logout');
-
-    homeViewBtn.click(function() {
-        homeView.css('display', 'inline-block');
-        loginView.css('display', 'none');
-    });
 
     loginBtn.click(function(e) {
         e.preventDefault();
@@ -261,9 +254,7 @@ $(function(){
                 window.location.hash = '';
                 setSession(authResult);
                 loginBtn.css('display', 'none');
-                homeView.css('display', 'inline-block');
             } else if (err) {
-                homeView.css('display', 'inline-block');
                 console.log(err);
                 alert('Error: ' + err.error + '. Check the console for further details.');
             }

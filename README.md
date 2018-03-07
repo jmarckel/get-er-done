@@ -9,6 +9,28 @@ and authorization workflows into web based API and site.
 Flask, Jinja2, Backbone.js, Auth0, OpenID Connect
 
 
+## create a site configuration file
+
+```
+{
+    "SPA": {
+        "auth0_domain": "techex-epoxyloaf-com.auth0.com",
+        "auth0_audience": "",
+        "algorithms": ["RS256"]
+    },
+    "WEBAPP": {
+        "auth0_callback_url": "",
+        "auth0_client_id": "",
+        "auth0_client_secret": "",
+        "auth0_domain": "",
+        "auth0_audience": ""
+    }
+}
+```
+
+It should be located in the runtime directory and called get-er-done-config.json
+
+
 ## To build and run on localhost
 
 ```
