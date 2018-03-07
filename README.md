@@ -9,7 +9,7 @@ and authorization workflows into web based API and site.
 Flask, Jinja2, Backbone.js, Auth0, OpenID Connect
 
 
-## create a site configuration file
+## create an auth configuration file
 
 ```
 {
