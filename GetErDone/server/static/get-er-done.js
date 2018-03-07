@@ -245,6 +245,7 @@ $(function(){
         localStorage.removeItem('id_token');
         localStorage.removeItem('expires_at');
         displayButtons();
+        displayGetErDoneApp();
     }
 
     function isAuthenticated() {
