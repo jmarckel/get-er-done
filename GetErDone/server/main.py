@@ -256,6 +256,9 @@ def task_list_json_handler():
 
 
 @app.route('/tasks', methods=['POST', 'GET', 'DELETE'])
+@cross_origin(headers=["Content-Type", "Authorization"])
+@cross_origin(headers=["Access-Control-Allow-Origin", "*"])
+@requires_auth
 def task_list_handler():
 
     response = None
