@@ -39,6 +39,9 @@ if(not os.path.exists(site_keyfile)):
     os.chmod(site_keyfile, stat.S_IRUSR)
 
 # read the secret key
+#
+# hmm, is this a conflict?
+#
 with open(site_keyfile, "rb") as keyfile:
     app.secret_key = keyfile.read()
 
@@ -61,7 +64,7 @@ logger.addHandler(fileLogger)
 
 
 #
-# auth code
+# common auth code
 #
 
 # Format error response and append status code.
@@ -77,6 +80,16 @@ def handle_auth_error(ex):
     response.status_code = ex.status_code
     return response
 
+@app.errorhandler(Exception)
+def handle_auth_error(ex):
+    response = jsonify(ex)
+    response.status_code = 500
+    return response
+
+
+#
+# SPA auth code
+#
 
 def get_token_auth_header():
     """Obtains the access token from the Authorization Header
@@ -107,7 +120,8 @@ def get_token_auth_header():
     return token
 
 
-def requires_scope(required_scope):
+# UNUSED
+def spa_requires_scope(required_scope):
     """Determines if the required scope is present in the access token
     Args:
         required_scope (str): The scope required to access the resource
@@ -122,13 +136,13 @@ def requires_scope(required_scope):
     return False
 
 
-def requires_auth(f):
+def spa_requires_auth(f):
     """Determines if the access token is valid
     """
     @wraps(f)
     def decorated(*args, **kwargs):
         token = get_token_auth_header()
-        jsonurl = urlopen("https://" + auth_config['auth0_domain'] + "/.well-known/jwks.json")
+        jsonurl = urlopen("https://" + auth_config['SPA']['auth0_domain'] + "/.well-known/jwks.json")
         jwks = json.loads(jsonurl.read())
         try:
             unverified_header = jwt.get_unverified_header(token)
@@ -155,14 +169,15 @@ def requires_auth(f):
                     "n": key["n"],
                     "e": key["e"]
                 }
+
         if rsa_key:
             try:
                 payload = jwt.decode(
                     token,
                     rsa_key,
-                    algorithms = site_config['algorithms'],
-                    audience = auth_config['auth0_audience'],
-                    issuer = "https://" + auth_config['auth0_domain'] + "/"
+                    algorithms=site_config['algorithms'],
+                    audience=auth_config['SPA']['auth0_audience'],
+                    issuer="https://" + auth_config['SPA']['auth0_domain'] + "/"
                 )
             except jwt.ExpiredSignatureError:
                 raise AuthError({"code": "token_expired",
@@ -183,6 +198,61 @@ def requires_auth(f):
         raise AuthError({"code": "invalid_header",
                         "description": "Unable to find appropriate key"}, 401)
     return decorated
+
+
+#
+# webapp auth code
+#
+
+oauth = OAuth(app)
+
+auth0 = oauth.remote_app('auth0',
+                         consumer_key=auth_config['WEBAPP']['auth0_client_id'],
+                         consumer_secret=auth_config['WEBAPP']['auth0_client_secret'],
+                         request_token_params={
+                             'scope': 'openid profile',
+                             'audience': auth_config['WEBAPP']['auth0_audience']
+                         },
+                         base_url = 'https://%s' % (auth_config['WEBAPP']['auth0_domain']),
+                         access_token_method='POST',
+                         access_token_url='/oauth/token',
+                         authorize_url='/authorize')
+
+
+def webapp_requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if auth_config['WEBAPP']['auth0_profile_key'] not in session:
+            return redirect('/login')
+        return f(*args, **kwargs)
+    return decorated
+
+
+@app.route('/callback')
+def callback_handling():
+    # Handles response from token endpoint
+    resp = auth0.authorized_response()
+    if resp is None:
+        raise Exception('Access denied: reason=%s error=%s' % (
+            request.args['error_reason'],
+            request.args['error_description']
+        ))
+
+    url = 'https://' + auth_config['WEBAPP']['auth0_domain'] + '/userinfo'
+    headers = {'authorization': 'Bearer ' + resp['access_token']}
+    resp = requests.get(url, headers=headers)
+    userinfo = resp.json()
+
+    # Store the tue user information in flask session.
+    session[auth_config['WEBAPP']['jwt_payload']] = userinfo
+
+    session[auth_config['WEBAPP']['auth0_profile_key']] = {
+        'user_id': userinfo['sub'],
+        'name': userinfo['name'],
+        'picture': userinfo['picture']
+    }
+
+    return redirect('/dashboard')
 
 
 #
@@ -263,7 +333,7 @@ def task_list_json_handler():
 @app.route('/tasks', methods=['POST', 'GET', 'DELETE'])
 @cross_origin(headers=["Content-Type", "Authorization"])
 @cross_origin(headers=["Access-Control-Allow-Origin", "*"])
-@requires_auth
+@spa_requires_auth
 def task_list_handler():
 
     response = None
@@ -320,90 +390,85 @@ def task_html_handler():
     return(response)
 
 
+# UNUSED ...
 @app.route('/tasks/<uuid:task_id>', methods=['PUT', 'GET', 'DELETE'])
 @cross_origin(headers=["Content-Type", "Authorization"])
 @cross_origin(headers=["Access-Control-Allow-Origin", "*"])
-@requires_auth
+@spa_requires_auth
 def task_handler():
 
     response = None
 
     if(request.headers['Content-Type'] == 'application/json'):
-        task_json_handler()
+        response = task_json_handler()
     else:
-        task_html_handler()
+        response = app.make_response('forbidden')
+        response.status_code = 500
 
     return(response)
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login')
 def login():
-
-    if(request.method == 'POST'):
-        if('username' in request.form):
-            logger.info("we have login for user %s" % (request.form['username']))
-            proposed_username = request.form['username']
-            m = re.match('\A([A-Za-z0-9]+)\Z', proposed_username)
-            if(m and m.group(0) == proposed_username):
-                session['username'] = request.form['username']
-                return redirect(url_for('index'))
-            else:
-                return render_template('login.html', greeting='illegal chars in username')
-   
-    return render_template('login.html')
+    return auth0.authorize(callback='http://techex.epoxyloaf.com/assigned')
 
 
 @app.route('/logout')
 def logout():
 
-    if('username' in session):
-        logger.info("we have logout for user %s" % (session['username']))
-        session.pop('username', None)
+    session.clear()
 
-    return redirect(url_for('index'))
+    params = {'returnTo': url_for('home', _external=True), 'client_id': auth_config['WEBAPP']['auth0_client_id']}
+
+    return redirect(auth0.base_url + '/v2/logout?' + urlencode(params))
 
 
 @app.route('/assigned')
-@cross_origin(headers=["Content-Type", "Authorization"])
-@cross_origin(headers=["Access-Control-Allow-Origin", "*"])
-@requires_auth
+@webapp_requires_auth
 def assigned():
+    logger.info("in assigned!")
     if('username' in session):
         logger.info("switch to assign for user %s" % (session['username']))
-        return render_template('get-er-assigned.html', 
-                               tasks = Storage.fetch_assigned(session['username']))
+        return render_template('get-er-assigned.html',
+                               tasks=Storage.fetch_assigned(session['username']))
 
     return redirect(url_for('index'))
 
 
 @app.route('/create', methods=['POST', 'GET'])
-@cross_origin(headers=["Content-Type", "Authorization"])
-@cross_origin(headers=["Access-Control-Allow-Origin", "*"])
-@requires_auth
+@webapp_requires_auth
 def create():
     if('username' in session):
+
         if(request.method == 'POST'):
+
             logger.info('create task')
+
             data = {}
             data['done'] = False
             data['order'] = calendar.timegm(time.gmtime())
             data['title'] = request.form['title']
             data['priority'] = request.form['priority']
             data['assign_to'] = request.form['assigned']
+
             Storage.store(session['username'], data)
-            
+
             return redirect(url_for('assigned'))
+
         else:
             logger.info("switch to create for user %s" % (session['username']))
-            return render_template('get-er-created.html', 
-                                   users = Storage.fetch_users(session['username']))
+            return render_template('get-er-created.html',
+                                   users=Storage.fetch_users(session['username']))
 
     return redirect(url_for('index'))
 
 
 @app.route('/')
 def index():
-    return render_template('index.html', site_state = 'possibly broken task list after auth...')
+
+    c = render_template('index.html',
+                        site_state='possibly broken task list after auth...')
+    return c
 
 
 def main():
