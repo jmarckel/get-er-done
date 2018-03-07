@@ -38,7 +38,7 @@ setup(
 
     include_package_data=True,
 
-    install_requires = ['Flask', 'jinja2'],
+    install_requires = ['Flask', 'flask-cors', 'jinja2', 'PyJWT', 'six'],
 
     entry_points = {
         'console_scripts': [

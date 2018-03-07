@@ -9,7 +9,7 @@ and authorization workflows into web based API and site.
 Flask, Jinja2, Backbone.js, Auth0, OpenID Connect
 
 
-## To run out of a dev sandbox on localhost
+## To build and run on localhost
 
 ```
 python3 ./setup.py bdist

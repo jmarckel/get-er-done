@@ -17,7 +17,6 @@
       <nav class="navbar navbar-default">
         <div class="container-fluid">
           <div class="navbar-header">
-            <a class="navbar-brand" href="#">Auth0 - jQuery</a>
   
             <button id="btn-home-view" class="btn btn-primary btn-margin">
               Home
@@ -31,35 +30,38 @@
                 Log Out
             </button>
 
+            <label>{{ site_state }}<label>
+
           </div>
         </div>
       </nav>
 
-      <div id="get-er-done-spa">
+      <div id="get-er-done-spa-view">
+        <div id="get-er-done-spa">
 
-        <a href='/logout'>logout</a>
-        <a href='/assigned'>manage</a>
+          <a href='/assigned'>manage</a>
 
-        <header>
-	  <h1>Assigned Tasks</h1>
-	  <input id="new-self-task" type="text" placeholder="New self task">
-        </header>
+          <header>
+	    <h1>Assigned Tasks</h1>
+	    <input id="new-self-task" type="text" placeholder="New self task">
+          </header>
 
-        <section id="main">
-          <input id="toggle-all" type="checkbox">
-          <label for="toggle-all">Mark all complete</label>
-          <ul id="get-er-done-spa-list"></ul>
-        </section>
+          <section id="main">
+            <input id="toggle-all" type="checkbox">
+            <label for="toggle-all">Mark all complete</label>
+            <ul id="get-er-done-spa-list"></ul>
+          </section>
 
-        <footer>
-          <a id="clear-completed">Clear completed</a>
-          <div id="todo-count"></div>
-        </footer>
+          <footer>
+            <a id="clear-completed">Clear completed</a>
+            <div id="todo-count"></div>
+          </footer>
 
-      </div>
+        </div>
 
-      <div id='instructions'>
-         Double click a task to edit the title.
+        <div id='instructions'>
+           Double click a task to edit the title.
+        </div>
       </div>
     </div>
 

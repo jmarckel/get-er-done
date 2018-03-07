@@ -137,7 +137,7 @@ $(function(){
 	    this.footer = this.$('footer');
 	    this.main = $('#main');
 
-	    GetErDoneTasks.fetch();
+	    // GetErDoneTasks.fetch();
 	},
 
 	render: function() {
@@ -210,6 +210,7 @@ $(function(){
     var loginStatus = $('.container h4');
     var loginView = $('#login-view');
     var homeView = $('#home-view');
+    var getErDoneAppView = $('#get-er-done-spa-view');
 
     // buttons and event listeners
     var homeViewBtn = $('#btn-home-view');
@@ -266,6 +267,7 @@ $(function(){
                 alert('Error: ' + err.error + '. Check the console for further details.');
             }
             displayButtons();
+            displayGetErDoneApp();
         });
     }
 
@@ -278,6 +280,15 @@ $(function(){
             loginBtn.css('display', 'inline-block');
             logoutBtn.css('display', 'none');
             loginStatus.text('You are not logged in! Please log in to continue.');
+        }
+    }
+
+    function displayGetErDoneApp() {
+        if (isAuthenticated()) {
+            getErDoneAppView.css('display', 'inline-block');
+	    GetErDoneTasks.fetch();
+        } else {
+            getErDoneAppView.css('display', 'none');
         }
     }
 
