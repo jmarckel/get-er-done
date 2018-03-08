@@ -36,7 +36,7 @@ $(function(){
 	nextOrder: function() {
             var d = new Date();
             var seconds = Math.round(d.getTime() / 1000);
-            return(seconds)
+            return(seconds);
 	},
 
 	comparator: 'order'
@@ -157,6 +157,7 @@ $(function(){
 	},
 
 	addOne: function(task) {
+            console.log('addOne()');
 	    var view = new GetErDoneTaskView({model: task});
 	    this.$("#get-er-done-spa-list").append(view.render().el);
 	},
@@ -190,7 +191,6 @@ $(function(){
 
 
     // AUTH0
-
 
     var content = $('.content');
     var loadingSpinner = $('#loading');
@@ -277,9 +277,11 @@ $(function(){
 
     function displayGetErDoneApp() {
         if (isAuthenticated()) {
+            console.log('displaying app');
             getErDoneAppView.css('display', 'inline-block');
 	    GetErDoneTasks.fetch();
         } else {
+            console.log('hiding app');
             getErDoneAppView.css('display', 'none');
         }
     }

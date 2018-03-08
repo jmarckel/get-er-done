@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import re
+import requests
 import stat
 import tempfile
 import time
@@ -95,8 +96,10 @@ def handle_auth_error(ex):
 def get_token_auth_header():
     """Obtains the access token from the Authorization Header
     """
+    logger.info('get_token_auth_header()')
     auth = request.headers.get("Authorization", None)
     if not auth:
+        logger.error('get_token_auth_header() no auth')
         raise AuthError({"code": "authorization_header_missing",
                         "description":
                             "Authorization header is expected"}, 401)
@@ -104,14 +107,17 @@ def get_token_auth_header():
     parts = auth.split()
 
     if parts[0].lower() != "bearer":
+        logger.error('get_token_auth_header() invalid header')
         raise AuthError({"code": "invalid_header",
                         "description":
                             "Authorization header must start with"
                             " Bearer"}, 401)
     elif len(parts) == 1:
+        logger.error('get_token_auth_header() not enough parts')
         raise AuthError({"code": "invalid_header",
                         "description": "Token not found"}, 401)
     elif len(parts) > 2:
+        logger.error('get_token_auth_header() too many parts')
         raise AuthError({"code": "invalid_header",
                         "description":
                             "Authorization header must be"
@@ -142,17 +148,25 @@ def spa_requires_auth(f):
     """
     @wraps(f)
     def decorated(*args, **kwargs):
+
+        logger.info('spa_requires_auth()')
+
         token = get_token_auth_header()
+        logger.info('spa_requires_auth() have token')
         jsonurl = urlopen("https://" + auth_config['SPA']['auth0_domain'] + "/.well-known/jwks.json")
+        logger.info('spa_requires_auth() fetching well known keys')
         jwks = json.loads(jsonurl.read())
+        logger.info('spa_requires_auth() prepared')
         try:
             unverified_header = jwt.get_unverified_header(token)
         except jwt.JWTError:
+            logger.error('spa_requires_auth() invalid header')
             raise AuthError({"code": "invalid_header",
                             "description":
                                 "Invalid header. "
                                 "Use an RS256 signed JWT Access Token"}, 401)
         if unverified_header["alg"] == "HS256":
+            logger.error('spa_requires_auth() invalid header alg')
             raise AuthError({"code": "invalid_header",
                             "description":
                                 "Invalid header. "
@@ -161,6 +175,7 @@ def spa_requires_auth(f):
         for key in jwks["keys"]:
             if key["kid"] == unverified_header["kid"]:
 
+                logger.info('spa_requires_auth() key id matched')
                 # do we really need to keep looping after here? I know the array should be small ...
 
                 rsa_key = {
@@ -173,6 +188,7 @@ def spa_requires_auth(f):
 
         if rsa_key:
             try:
+                logger.info('spa_requires_auth() with rsa key')
                 payload = jwt.decode(
                     token,
                     rsa_key,
@@ -180,22 +196,29 @@ def spa_requires_auth(f):
                     audience=auth_config['SPA']['auth0_audience'],
                     issuer="https://" + auth_config['SPA']['auth0_domain'] + "/"
                 )
+                logger.info('spa_requires_auth() key payload decoded')
             except jwt.ExpiredSignatureError:
+                logger.error('spa_requires_auth() expired signature')
                 raise AuthError({"code": "token_expired",
                                 "description": "token is expired"}, 401)
             except jwt.JWTClaimsError:
+                logger.error('spa_requires_auth() invalid claims')
                 raise AuthError({"code": "invalid_claims",
                                 "description":
                                     "incorrect claims,"
                                     " please check the audience and issuer"}, 401)
             except Exception:
+                logger.error('spa_requires_auth() exception')
                 raise AuthError({"code": "invalid_header",
                                 "description":
                                     "Unable to parse authentication"
                                     " token."}, 401)
 
+            logger.info('spa_requires_auth() all good')
             _request_ctx_stack.top.current_user = payload
             return f(*args, **kwargs)
+
+        logger.error('spa_requires_auth() no appropriate key')
         raise AuthError({"code": "invalid_header",
                         "description": "Unable to find appropriate key"}, 401)
     return decorated
@@ -231,6 +254,7 @@ def webapp_requires_auth(f):
 
 @app.route('/callback')
 def callback_handling():
+    logger.info('callback called')
     # Handles response from token endpoint
     resp = auth0.authorized_response()
     if resp is None:
@@ -245,7 +269,7 @@ def callback_handling():
     userinfo = resp.json()
 
     # Store the tue user information in flask session.
-    session[auth_config['WEBAPP']['jwt_payload']] = userinfo
+    session[auth_config['WEBAPP']['auth0_jwt_payload']] = userinfo
 
     session[auth_config['WEBAPP']['auth0_profile_key']] = {
         'user_id': userinfo['sub'],
@@ -253,7 +277,7 @@ def callback_handling():
         'picture': userinfo['picture']
     }
 
-    return redirect('/dashboard')
+    return redirect('/assigned')
 
 
 #
@@ -340,6 +364,8 @@ def task_list_json_handler():
 @spa_requires_auth
 def task_list_handler():
 
+    logger.info('tasks called')
+
     response = None
 
     if('username' in session):
@@ -417,15 +443,20 @@ def task_handler():
 
 @app.route('/login')
 def login():
-    return auth0.authorize(callback='http://techex.epoxyloaf.com/assigned')
+
+    logger.info('login called')
+
+    return auth0.authorize(callback='http://techex.epoxyloaf.com/callback')
 
 
 @app.route('/logout')
 def logout():
 
+    logger.info('logout called')
+
     session.clear()
 
-    params = {'returnTo': url_for('index', _external=True), 'client_id': auth_config['WEBAPP']['auth0_client_id']}
+    params = {'returnTo': url_for('assigned', _external=True), 'client_id': auth_config['WEBAPP']['auth0_client_id']}
 
     return redirect(auth0.base_url + '/v2/logout?' + urllib.urlencode(params))
 
@@ -434,10 +465,11 @@ def logout():
 @webapp_requires_auth
 def assigned():
     logger.info("in assigned!")
-    if('username' in session):
-        logger.info("switch to assign for user %s" % (session['username']))
+    user_id = session[auth_config['WEBAPP']['auth0_profile_key']]['user_id']
+    if(user_id):
+        logger.info("switch to assign for user %s" % (user_id))
         return render_template('get-er-assigned.html',
-                               tasks=Storage.fetch_assigned(session['username']))
+                               tasks=Storage.fetch_assigned(user_id))
     else:
         logger.error('task list unknown headers: %s' % (request.headers))
 
@@ -448,7 +480,11 @@ def assigned():
 @webapp_requires_auth
 def create():
 
-    if('username' in session):
+    logger.info('create called')
+
+    user_id = session[auth_config['WEBAPP']['auth0_profile_key']]['user_id']
+
+    if(user_id):
 
         if(request.method == 'POST'):
 
@@ -461,26 +497,29 @@ def create():
             data['priority'] = request.form['priority']
             data['assign_to'] = request.form['assigned']
 
-            Storage.store(session['username'], data)
+            Storage.store(user_id, data)
 
             return redirect(url_for('assigned'))
 
         else:
-            logger.info("switch to create for user %s" % (session['username']))
+            logger.info("switch to create for user %s" % (user_id))
             return render_template('get-er-created.html',
-                                   users=Storage.fetch_users(session['username']))
+                                   users=Storage.fetch_users(user_id))
 
     else:
         logger.error('task list unknown headers: %s' % (request.headers))
 
-    return redirect(url_for('index'))
+    return redirect(url_for('login'))
 
 
 @app.route('/')
 def index():
 
+    logger.info('index called')
+
     c = render_template('index.html',
                         site_state='possibly broken task list after auth...')
+
     return c
 
 
