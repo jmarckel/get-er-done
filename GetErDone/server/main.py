@@ -11,6 +11,7 @@ import re
 import stat
 import tempfile
 import time
+import urllib
 
 from functools import wraps
 
@@ -82,7 +83,7 @@ def handle_auth_error(ex):
 
 @app.errorhandler(Exception)
 def handle_auth_error(ex):
-    response = jsonify(ex)
+    response = jsonify(ex.__str__())
     response.status_code = 500
     return response
 
@@ -268,6 +269,7 @@ def task_list_json_delete_handler():
         response = jsonify(content)
         response.status_code = 200
     except(Storage.StorageException) as e:
+        logger.error("delete all exception '%s' headers: %s" % (e.message, request.headers))
         response = app.make_response(e.message)
         response.status_code = 500
 
@@ -283,6 +285,7 @@ def task_list_json_get_handler():
         response = jsonify(content)
         response.status_code = 200
     except(Storage.StorageException) as e:
+        logger.error("fetch all exception '%s' headers: %s" % (e.message, request.headers))
         response = app.make_response(e.message)
         response.status_code = 500
 
@@ -301,6 +304,7 @@ def task_list_json_post_handler():
         response = app.make_response('OK')
         response.status_code = 200
     except(Storage.StorageException) as e:
+        logger.error("storage exception '%s' headers: %s" % (e.message, request.headers))
         response = app.make_response(e.message)
         response.status_code = 500
 
@@ -342,6 +346,7 @@ def task_list_handler():
         logger.debug('headers: %s' % (request.headers))
         response = task_list_json_handler()
     else:
+        logger.error('task list unknown headers: %s' % (request.headers))
         response = app.make_response('forbidden')
         response.status_code = 500
 
@@ -361,6 +366,7 @@ def task_json_put_handler():
         response = app.make_response('OK')
         response.status_code = 200
     except(Storage.StorageException) as e:
+        logger.error("task put exception '%s' headers: %s" % (e.message, request.headers))
         response = app.make_response(e.message)
         response.status_code = 500
 
@@ -384,6 +390,7 @@ def task_html_handler():
         response = task_html_delete_handler()
 
     else:
+        logger.error("task html unknown headers: %s" % (request.headers))
         response = app.make_response('forbidden')
         response.status_code = 500
 
@@ -418,9 +425,9 @@ def logout():
 
     session.clear()
 
-    params = {'returnTo': url_for('home', _external=True), 'client_id': auth_config['WEBAPP']['auth0_client_id']}
+    params = {'returnTo': url_for('index', _external=True), 'client_id': auth_config['WEBAPP']['auth0_client_id']}
 
-    return redirect(auth0.base_url + '/v2/logout?' + urlencode(params))
+    return redirect(auth0.base_url + '/v2/logout?' + urllib.urlencode(params))
 
 
 @app.route('/assigned')
@@ -431,6 +438,8 @@ def assigned():
         logger.info("switch to assign for user %s" % (session['username']))
         return render_template('get-er-assigned.html',
                                tasks=Storage.fetch_assigned(session['username']))
+    else:
+        logger.error('task list unknown headers: %s' % (request.headers))
 
     return redirect(url_for('index'))
 
@@ -438,6 +447,7 @@ def assigned():
 @app.route('/create', methods=['POST', 'GET'])
 @webapp_requires_auth
 def create():
+
     if('username' in session):
 
         if(request.method == 'POST'):
@@ -459,6 +469,9 @@ def create():
             logger.info("switch to create for user %s" % (session['username']))
             return render_template('get-er-created.html',
                                    users=Storage.fetch_users(session['username']))
+
+    else:
+        logger.error('task list unknown headers: %s' % (request.headers))
 
     return redirect(url_for('index'))
 
