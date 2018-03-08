@@ -100,6 +100,7 @@ def get_token_auth_header():
     auth = request.headers.get("Authorization", None)
     if not auth:
         logger.error('get_token_auth_header() no auth')
+        logger.error('headers:\n%s' % (request.headers))
         raise AuthError({"code": "authorization_header_missing",
                         "description":
                             "Authorization header is expected"}, 401)
@@ -293,7 +294,7 @@ def task_list_json_delete_handler():
         response = jsonify(content)
         response.status_code = 200
     except(Storage.StorageException) as e:
-        logger.error("delete all exception '%s' headers: %s" % (e.message, request.headers))
+        logger.error("delete all exception '%s' headers:\n%s" % (e.message, request.headers))
         response = app.make_response(e.message)
         response.status_code = 500
 
@@ -309,7 +310,7 @@ def task_list_json_get_handler():
         response = jsonify(content)
         response.status_code = 200
     except(Storage.StorageException) as e:
-        logger.error("fetch all exception '%s' headers: %s" % (e.message, request.headers))
+        logger.error("fetch all exception '%s' headers:\n%s" % (e.message, request.headers))
         response = app.make_response(e.message)
         response.status_code = 500
 
@@ -328,7 +329,7 @@ def task_list_json_post_handler():
         response = app.make_response('OK')
         response.status_code = 200
     except(Storage.StorageException) as e:
-        logger.error("storage exception '%s' headers: %s" % (e.message, request.headers))
+        logger.error("storage exception '%s' headers:\n%s" % (e.message, request.headers))
         response = app.make_response(e.message)
         response.status_code = 500
 
@@ -518,7 +519,7 @@ def index():
     logger.info('index called')
 
     c = render_template('index.html',
-                        site_state='possibly broken task list after auth...')
+                        site_state='not getting authorization in headers on api calls, so task list is not saved...')
 
     return c
 

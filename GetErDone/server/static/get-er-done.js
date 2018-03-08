@@ -223,6 +223,7 @@ $(function(){
     logoutBtn.click(logout);
 
     function setSession(authResult) {
+        console.log('setting session');
         // Set the time that the access token will expire at
         var expiresAt = JSON.stringify(
             authResult.expiresIn * 1000 + new Date().getTime()
