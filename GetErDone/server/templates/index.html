@@ -9,85 +9,8 @@
 
   <body>
 
-    <div id="loading">
-      <img src="assets/loading.svg" alt="Loading spinner">
-    </div>
-
-    <div class="content">
-      <nav class="navbar navbar-default">
-        <div class="container-fluid">
-          <div class="navbar-header">
-  
-            <button id="btn-login" class="btn btn-primary btn-margin">
-              Log In
-            </button>
-
-            <button id="btn-logout" class="btn btn-primary btn-margin">
-                Log Out
-            </button>
-
-            <label>{{ site_state }}<label>
-
-          </div>
-        </div>
-      </nav>
-
-      <div id="get-er-done-spa-view">
-        <div id="get-er-done-spa">
-
-          <a href='/assigned'>manage</a>
-
-          <header>
-	    <h1>Assigned Tasks</h1>
-	    <input id="new-self-task" type="text" placeholder="New self task">
-          </header>
-
-          <section id="main">
-            <input id="toggle-all" type="checkbox">
-            <label for="toggle-all">Mark all complete</label>
-            <ul id="get-er-done-spa-list"></ul>
-          </section>
-
-          <footer>
-            <a id="clear-completed">Clear completed</a>
-            <div id="todo-count"></div>
-          </footer>
-
-        </div>
-
-        <div id='instructions'>
-           Double click a task to edit the title.
-        </div>
-      </div>
-    </div>
-
-    <script src="/static/scripts/jquery.js"></script>
-    <script src="/static/scripts/underscore.js"></script>
-    <script src="/static/scripts/backbone.js"></script>
-    <script src="/static/get-er-done.js"></script>
-
-    <script src="https://cdn.auth0.com/js/auth0/9.3.1/auth0.min.js"></script>
-
-    <script type="text/template" id="item-template">
-      <div class="view">
-	<input class="toggle" type="checkbox" <%= done ? 'checked="checked"' : '' %> />
-	<select class="choosePriority" name="priority">
-            <option value="normal" <%= priority === "normal" ? 'selected="true"' : '' %> >normal</option>
-            <option value="high" <%= priority === "high" ? 'selected="true"' : '' %> >high</option>
-            <option value="low" <%= priority === "low" ? 'selected="true"' : '' %> >low</option>
-        </select>
-	<label><%- title %></label>
-	<a class="destroy"></a>
-      </div>
-      <input class="edit" type="text" value="<%- title %>" />
-    </script>
-
-    <script type="text/template" id="stats-template">
-      <% if (done) { %>
-      <a id="clear-completed">Clear <%= done %> completed <%= done == 1 ? 'item' : 'items' %></a>
-      <% } %>
-      <div class="todo-count"><b><%= remaining %></b> <%= remaining == 1 ? 'item' : 'items' %> left</div>
-    </script>
+    <a href="/get-er-done">SPA</A>
+    <a href="/assigned">WEBAPP</A>
 
   </body>
 </html>

@@ -25,7 +25,6 @@ from flask_oauthlib.client import OAuth
 import jwt
 from six.moves.urllib.request import urlopen
 
-
 from . import Storage
 
 # initial setup for flask
@@ -248,14 +247,14 @@ def webapp_requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if auth_config['WEBAPP']['auth0_profile_key'] not in session:
-            return redirect('/login')
+            return redirect('/login/webapp')
         return f(*args, **kwargs)
     return decorated
 
 
-@app.route('/callback')
-def callback_handling():
-    logger.info('callback called')
+@app.route('/callback/webapp')
+def webapp_callback_handler():
+    logger.info('webapp callback called')
     # Handles response from token endpoint
     resp = auth0.authorized_response()
     if resp is None:
@@ -442,24 +441,24 @@ def task_handler():
     return(response)
 
 
-@app.route('/login')
-def login():
+@app.route('/login/webapp')
+def webapp_login():
 
-    logger.info('login called')
+    logger.info('webapp login called')
 
-    return auth0.authorize(callback='http://techex.epoxyloaf.com/callback')
+    return auth0.authorize(callback=auth_config['WEBAPP']['auth0_login_callback_url'])
 
 
-@app.route('/logout')
-def logout():
+@app.route('/logout/webapp')
+def webapp_logout():
 
-    logger.info('logout called')
+    logger.info('webapp logout called')
 
     session.clear()
 
-    params = {'returnTo': url_for('assigned', _external=True), 'client_id': auth_config['WEBAPP']['auth0_client_id']}
+    params = {'returnTo': auth_config['WEBAPP']['auth0_logout_callback_url'], 'client_id': auth_config['WEBAPP']['auth0_client_id']}
 
-    return redirect(auth0.base_url + '/v2/logout?' + urllib.urlencode(params))
+    return redirect(auth0.base_url + '/v2/logout?' + urllib.parse.urlencode(params))
 
 
 @app.route('/assigned')
@@ -472,9 +471,9 @@ def assigned():
         return render_template('get-er-assigned.html',
                                tasks=Storage.fetch_assigned(user_id))
     else:
-        logger.error('task list unknown headers: %s' % (request.headers))
+        logger.info('redirecting for login')
 
-    return redirect(url_for('index'))
+    return redirect(url_for('login'))
 
 
 @app.route('/create', methods=['POST', 'GET'])
@@ -510,7 +509,7 @@ def create():
     else:
         logger.error('task list unknown headers: %s' % (request.headers))
 
-    return redirect(url_for('login'))
+    return redirect(url_for('login/webapp'))
 
 
 @app.route('/')
@@ -519,6 +518,17 @@ def index():
     logger.info('index called')
 
     c = render_template('index.html',
+                        site_state='not getting authorization in headers on api calls, so task list is not saved...')
+
+    return c
+
+
+@app.route('/get-er-done')
+def get_er_done():
+
+    logger.info('get_er_done called')
+
+    c = render_template('get-er-done.html',
                         site_state='not getting authorization in headers on api calls, so task list is not saved...')
 
     return c

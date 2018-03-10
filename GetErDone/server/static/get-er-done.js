@@ -200,7 +200,8 @@ $(function(){
     var webAuth = new auth0.WebAuth({
         domain: 'techex-epoxyloaf-com.auth0.com',
         clientID: 'JmEarsTOZ3uy04TxiGb4TK9Xu9cBJVaR',
-        redirectUri: 'http://techex.epoxyloaf.com/',
+        // redirectUri: 'http://techex.epoxyloaf.com/',
+        redirectUri: 'http://127.0.0.1:5000/',
         audience: 'https://techex-epoxyloaf-com.auth0.com/userinfo',
         responseType: 'token id_token',
         scope: 'openid',
