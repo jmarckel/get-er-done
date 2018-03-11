@@ -22,7 +22,11 @@ from flask_cors import cross_origin
 
 from flask_oauthlib.client import OAuth
 
-import jwt
+# import jwt
+# from Crypto.PublicKey import RSA
+
+from jose import jwt
+
 from six.moves.urllib.request import urlopen
 
 from . import Storage
@@ -77,12 +81,14 @@ class AuthError(Exception):
 
 @app.errorhandler(AuthError)
 def handle_auth_error(ex):
+    logger.error('auth error: ' + json.dumps(ex.error))
     response = jsonify(ex.error)
     response.status_code = ex.status_code
     return response
 
 @app.errorhandler(Exception)
 def handle_auth_error(ex):
+    logger.error('auth exception: ' + ex.__str__())
     response = jsonify(ex.__str__())
     response.status_code = 500
     return response
@@ -152,19 +158,23 @@ def spa_requires_auth(f):
         logger.info('spa_requires_auth()')
 
         token = get_token_auth_header()
-        logger.info('spa_requires_auth() have token')
-        jsonurl = urlopen("https://" + auth_config['SPA']['auth0_domain'] + "/.well-known/jwks.json")
-        logger.info('spa_requires_auth() fetching well known keys')
-        jwks = json.loads(jsonurl.read())
-        logger.info('spa_requires_auth() prepared')
+        logger.info('spa_requires_auth() have token: ' + token)
+        url = "https://" + auth_config['SPA']['auth0_domain'] + "/.well-known/jwks.json"
+        jsonurl = urlopen(url)
+        logger.info('spa_requires_auth() fetched well known keys from: ' + url)
+        data = jsonurl.read()
+        # jwks = json.loads(data.decode('utf8'))
+        jwks = json.loads(data.decode('utf8'))
+        logger.info('spa_requires_auth() jwks: ' + data.decode('utf8'))
         try:
             unverified_header = jwt.get_unverified_header(token)
-        except jwt.JWTError:
+        except jwt.DecodeError as e:
+            logger.error('spa_requires_auth() invalid header: decode error' + e.__str__())
+            raise
+        except jwt.InvalidTokenError:
             logger.error('spa_requires_auth() invalid header')
             raise AuthError({"code": "invalid_header",
-                            "description":
-                                "Invalid header. "
-                                "Use an RS256 signed JWT Access Token"}, 401)
+                            "description": "Invalid header. Use an RS256 signed JWT Access Token"}, 401)
         if unverified_header["alg"] == "HS256":
             logger.error('spa_requires_auth() invalid header alg')
             raise AuthError({"code": "invalid_header",
@@ -192,8 +202,9 @@ def spa_requires_auth(f):
                 payload = jwt.decode(
                     token,
                     rsa_key,
-                    algorithms=auth_config['SPA']['algorithms'],
-                    audience=auth_config['SPA']['auth0_audience'],
+                    algorithms=["RS256"],
+                    # audience=auth_config['SPA']['auth0_audience'],
+                    audience=auth_config['SPA']['auth0_client_id'],
                     issuer="https://" + auth_config['SPA']['auth0_domain'] + "/"
                 )
                 logger.info('spa_requires_auth() key payload decoded')
@@ -207,12 +218,12 @@ def spa_requires_auth(f):
                                 "description":
                                     "incorrect claims,"
                                     " please check the audience and issuer"}, 401)
-            except Exception:
+            except Exception as e:
                 logger.error('spa_requires_auth() exception')
                 raise AuthError({"code": "invalid_header",
                                 "description":
                                     "Unable to parse authentication"
-                                    " token."}, 401)
+                                    " token." + e.__str__()}, 401)
 
             logger.info('spa_requires_auth() all good')
             _request_ctx_stack.top.current_user = payload

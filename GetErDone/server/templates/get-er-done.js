@@ -12,7 +12,7 @@ $(function(){
 	},
 
 	toggle: function() {
-	    this.save({done: !this.get("done")});
+	    this.save({done: !this.get("done")}, {beforeSend: addAuthHeaders});
 	}
 
     });
@@ -84,7 +84,7 @@ $(function(){
 	    if (!value) {
 		value = "normal";
 	    }
-            this.model.save({priority: value});
+            this.model.save({priority: value}, {beforeSend: addAuthHeaders});
 	},
 
 	edit: function() {
@@ -97,7 +97,7 @@ $(function(){
 	    if (!value) {
 		this.clear();
 	    } else {
-		this.model.save({title: value});
+		this.model.save({title: value}, {beforeSend: addAuthHeaders});
 		this.$el.removeClass("editing");
 	    }
 	},
@@ -181,7 +181,7 @@ $(function(){
 
 	toggleAllComplete: function () {
 	    var done = this.allCheckbox.checked;
-	    GetErDoneTasks.each(function (task) { task.save({'done': done}); });
+	    GetErDoneTasks.each(function (task) { task.save({'done': done}, {beforeSend: addAuthHeaders}); });
 	}
 
     });
@@ -228,6 +228,9 @@ $(function(){
         var expiresAt = JSON.stringify(
             authResult.expiresIn * 1000 + new Date().getTime()
         );
+        console.log('access_token: ' + authResult.accessToken);
+        console.log('id_token: ' + authResult.idToken);
+        console.log('expires_at: ' +  expiresAt);
         localStorage.setItem('access_token', authResult.accessToken);
         localStorage.setItem('id_token', authResult.idToken);
         localStorage.setItem('expires_at', expiresAt);
@@ -247,6 +250,12 @@ $(function(){
         // access token's expiry time
         var expiresAt = JSON.parse(localStorage.getItem('expires_at'));
         return new Date().getTime() < expiresAt;
+    }
+
+    function addAuthHeaders(xhr) {
+        if(isAuthenticated()) {
+            xhr.setRequestHeader( 'Authorization', 'Bearer ' + localStorage.getItem('id_token') );
+        }
     }
 
     function handleAuthentication() {
@@ -280,7 +289,7 @@ $(function(){
         if (isAuthenticated()) {
             console.log('displaying app');
             getErDoneAppView.css('display', 'inline-block');
-	    GetErDoneTasks.fetch();
+	    GetErDoneTasks.fetch({beforeSend: addAuthHeaders});
         } else {
             console.log('hiding app');
             getErDoneAppView.css('display', 'none');
