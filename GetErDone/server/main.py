@@ -192,7 +192,7 @@ def spa_requires_auth(f):
                 payload = jwt.decode(
                     token,
                     rsa_key,
-                    algorithms=site_config['algorithms'],
+                    algorithms=auth_config['SPA']['algorithms'],
                     audience=auth_config['SPA']['auth0_audience'],
                     issuer="https://" + auth_config['SPA']['auth0_domain'] + "/"
                 )
@@ -530,6 +530,17 @@ def get_er_done():
 
     c = render_template('get-er-done.html',
                         site_state='not getting authorization in headers on api calls, so task list is not saved...')
+
+    return c
+
+
+@app.route('/get-er-done/script')
+def get_er_done_script():
+
+    logger.info('serving get-er-donejs template')
+
+    # only pass the SPA config to avoid risk of exposing WEBAPP secrets
+    c = render_template('get-er-done.js', auth_config=auth_config['SPA'])
 
     return c
 

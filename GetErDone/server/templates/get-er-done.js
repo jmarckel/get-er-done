@@ -198,11 +198,10 @@ $(function(){
     loadingSpinner.css('display', 'none');;
 
     var webAuth = new auth0.WebAuth({
-        domain: 'techex-epoxyloaf-com.auth0.com',
-        clientID: 'JmEarsTOZ3uy04TxiGb4TK9Xu9cBJVaR',
-        // redirectUri: 'http://techex.epoxyloaf.com/',
-        redirectUri: 'http://127.0.0.1:5000/',
-        audience: 'https://techex-epoxyloaf-com.auth0.com/userinfo',
+        domain: '{{ auth_config['auth0_domain'] }}',
+        clientID: '{{ auth_config['auth0_client_id'] }}',
+        redirectUri: '{{ auth_config['auth0_login_callback_url'] }}',
+        audience: '{{ auth_config['auth0_audience'] }}',
         responseType: 'token id_token',
         scope: 'openid',
         leeway: 60
