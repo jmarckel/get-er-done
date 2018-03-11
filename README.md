@@ -2,6 +2,10 @@
 
 Work in progress here...
 
+For some reason I can't determine, the claims are rejected in the SPA...
+
+Otherwise, there is some interesting stuff in here and I have learned a lot.
+
 This is a technical exercise where I am building an application suite using a
 mix of technologies to demonstrate the integration of external authentication
 and authorization workflows into web based API and site.
@@ -12,18 +16,24 @@ Flask, Jinja2, Backbone.js, Auth0, OpenID Connect
 ## create an auth configuration file
 
 ```
-{
-    "SPA": {
+{ 
+    "SPA": { 
+        "algorithms": ["RS256"],
+        "auth0_audience": "https://techex-epoxyloaf-com.auth0.com/userinfo",
+        "auth0_callback_url": "http://127.0.0.1:5000/callback",
+        "auth0_client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
         "auth0_domain": "techex-epoxyloaf-com.auth0.com",
-        "auth0_audience": "",
-        "algorithms": ["RS256"]
+        "auth0_login_callback_url": "http://127.0.0.1:5000/get-er-done"
     },
     "WEBAPP": {
-        "auth0_callback_url": "",
-        "auth0_client_id": "",
-        "auth0_client_secret": "",
-        "auth0_domain": "",
-        "auth0_audience": ""
+        "auth0_login_callback_url": "http://127.0.0.1:5000/callback/webapp",
+        "auth0_logout_callback_url": "http://127.0.0.1:5000/",
+        "auth0_client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "auth0_client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "auth0_domain": "techex-epoxyloaf-com.auth0.com",
+        "auth0_audience": "https://techex-epoxyloaf-com.auth0.com/userinfo",
+        "auth0_profile_key": "profile",
+        "auth0_jwt_payload": "jwt_payload"
     }
 }
 ```
