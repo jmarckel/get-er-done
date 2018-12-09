@@ -22,10 +22,10 @@ from flask_cors import cross_origin
 
 from flask_oauthlib.client import OAuth
 
-# import jwt
+import jwt
 # from Crypto.PublicKey import RSA
 
-from jose import jwt
+# from jose import jwt
 
 from six.moves.urllib.request import urlopen
 
@@ -168,10 +168,10 @@ def spa_requires_auth(f):
         logger.info('spa_requires_auth() jwks: ' + data.decode('utf8'))
         try:
             unverified_header = jwt.get_unverified_header(token)
-        except jwt.DecodeError as e:
+        except jwt.exceptions.DecodeError as e:
             logger.error('spa_requires_auth() invalid header: decode error' + e.__str__())
             raise
-        except jwt.InvalidTokenError:
+        except jwt.exceptions.InvalidTokenError:
             logger.error('spa_requires_auth() invalid header')
             raise AuthError({"code": "invalid_header",
                             "description": "Invalid header. Use an RS256 signed JWT Access Token"}, 401)
@@ -208,11 +208,11 @@ def spa_requires_auth(f):
                     issuer="https://" + auth_config['SPA']['auth0_domain'] + "/"
                 )
                 logger.info('spa_requires_auth() key payload decoded')
-            except jwt.ExpiredSignatureError:
+            except jwt.exceptions.ExpiredSignatureError:
                 logger.error('spa_requires_auth() expired signature')
                 raise AuthError({"code": "token_expired",
                                 "description": "token is expired"}, 401)
-            except jwt.JWTClaimsError:
+            except jwt.exceptions.JWTClaimsError:
                 logger.error('spa_requires_auth() invalid claims')
                 raise AuthError({"code": "invalid_claims",
                                 "description":
@@ -469,7 +469,7 @@ def webapp_logout():
 
     params = {'returnTo': auth_config['WEBAPP']['auth0_logout_callback_url'], 'client_id': auth_config['WEBAPP']['auth0_client_id']}
 
-    return redirect(auth0.base_url + '/v2/logout?' + urllib.parse.urlencode(params))
+    return redirect(auth0.base_url + '/v2/logout?' + urllib.urlencode(params))
 
 
 @app.route('/assigned')

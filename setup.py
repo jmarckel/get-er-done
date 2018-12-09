@@ -38,7 +38,7 @@ setup(
 
     include_package_data=True,
 
-    install_requires = ['Flask', 'Flask-OAuthlib', 'flask-cors', 'jinja2', 'python-jose', 'six'],
+    install_requires = ['Flask', 'Flask-OAuthlib', 'flask-cors', 'jinja2', 'PyJWT', 'six'],
 
     entry_points = {
         'console_scripts': [
