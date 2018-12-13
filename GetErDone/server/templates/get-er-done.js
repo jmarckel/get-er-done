@@ -256,7 +256,8 @@ $(function(){
         console.log('addAuthHeaders()');
         if(isAuthenticated()) {
             console.log('adding auth headers');
-            xhr.setRequestHeader( 'Authorization', 'Bearer ' + localStorage.getItem('id_token') );
+            console.log('access token: ' + localStorage.getItem('access_token'));
+            xhr.setRequestHeader( 'Authorization', 'Bearer ' + localStorage.getItem('access_token'));
         }
     }
 

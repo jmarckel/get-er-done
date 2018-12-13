@@ -81,14 +81,14 @@ class AuthError(Exception):
 
 @app.errorhandler(AuthError)
 def handle_auth_error(ex):
-    logger.error('auth error: ' + json.dumps(ex.error))
+    logger.error("auth error accessing '%s:%s': %s" % (request.method, request.url, json.dumps(ex.error)))
     response = jsonify(ex.error)
     response.status_code = ex.status_code
     return response
 
 @app.errorhandler(Exception)
 def handle_auth_error(ex):
-    logger.error('auth exception: ' + ex.__str__())
+    logger.error("auth exception accessing '%s:%s': %s" % (request.method, request.url, ex.__str__()))
     response = jsonify(ex.__str__())
     response.status_code = 500
     return response
@@ -163,13 +163,12 @@ def spa_requires_auth(f):
         jsonurl = urlopen(url)
         logger.info('spa_requires_auth() fetched well known keys from: ' + url)
         data = jsonurl.read()
-        # jwks = json.loads(data.decode('utf8'))
         jwks = json.loads(data.decode('utf8'))
         logger.info('spa_requires_auth() jwks: ' + data.decode('utf8'))
         try:
             unverified_header = jwt.get_unverified_header(token)
         except jwt.exceptions.DecodeError as e:
-            logger.error('spa_requires_auth() invalid header: decode error' + e.__str__())
+            logger.error('spa_requires_auth() invalid header: decode error ' + e.__str__())
             raise
         except jwt.exceptions.InvalidTokenError:
             logger.error('spa_requires_auth() invalid header')
@@ -198,13 +197,12 @@ def spa_requires_auth(f):
 
         if rsa_key:
             try:
-                logger.info('spa_requires_auth() with rsa key')
+                logger.info("spa_requires_auth() with rsa key for token '%s'" % (token))
                 payload = jwt.decode(
                     token,
                     rsa_key,
                     algorithms=["RS256"],
-                    # audience=auth_config['SPA']['auth0_audience'],
-                    audience=auth_config['SPA']['auth0_client_id'],
+                    audience=auth_config['SPA']['auth0_audience'],
                     issuer="https://" + auth_config['SPA']['auth0_domain'] + "/"
                 )
                 logger.info('spa_requires_auth() key payload decoded')
@@ -212,18 +210,18 @@ def spa_requires_auth(f):
                 logger.error('spa_requires_auth() expired signature')
                 raise AuthError({"code": "token_expired",
                                 "description": "token is expired"}, 401)
-            except jwt.exceptions.JWTClaimsError:
-                logger.error('spa_requires_auth() invalid claims')
-                raise AuthError({"code": "invalid_claims",
-                                "description":
-                                    "incorrect claims,"
-                                    " please check the audience and issuer"}, 401)
+            # except jwt.exceptions.JWTClaimsError:
+                # logger.error('spa_requires_auth() invalid claims')
+                # raise AuthError({"code": "invalid_claims",
+                                # "description":
+                                    # "incorrect claims,"
+                                    # " please check the audience and issuer"}, 401)
             except Exception as e:
                 logger.error('spa_requires_auth() exception')
                 raise AuthError({"code": "invalid_header",
                                 "description":
                                     "Unable to parse authentication"
-                                    " token." + e.__str__()}, 401)
+                                    " token. " + e.__str__()}, 401)
 
             logger.info('spa_requires_auth() all good')
             _request_ctx_stack.top.current_user = payload
@@ -371,7 +369,6 @@ def task_list_json_handler():
 
 @app.route('/tasks', methods=['POST', 'GET', 'DELETE'])
 @cross_origin(headers=["Content-Type", "Authorization"])
-@cross_origin(headers=["Access-Control-Allow-Origin", "*"])
 @spa_requires_auth
 def task_list_handler():
 
@@ -437,7 +434,6 @@ def task_html_handler():
 # UNUSED ...
 @app.route('/tasks/<uuid:task_id>', methods=['PUT', 'GET', 'DELETE'])
 @cross_origin(headers=["Content-Type", "Authorization"])
-@cross_origin(headers=["Access-Control-Allow-Origin", "*"])
 @spa_requires_auth
 def task_handler():
 

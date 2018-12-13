@@ -122,6 +122,7 @@ I defined the following to get things working in Apache2 on Ubuntu
         WSGIProcessGroup GetErDoneSuite
         WSGIApplicationGroup %{GLOBAL}
         WSGIScriptReloading On
+        WSGIPassAuthorization On
         <Files GetErDoneSuite.wsgi>
             Require all granted
         </Files>
