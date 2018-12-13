@@ -246,10 +246,13 @@ $(function(){
     }
 
     function isAuthenticated() {
-        // Check whether the current time is past the
-        // access token's expiry time
         var expiresAt = JSON.parse(localStorage.getItem('expires_at'));
-        return new Date().getTime() < expiresAt;
+        var timeNow = new Date().getTime();
+        console.log('isAuthenticated() timeNow=' + timeNow + ' expiresAt=' + expiresAt);
+        if(timeNow < expiresAt) {
+            return(1);
+        }
+        return(0);
     }
 
     function addAuthHeaders(xhr) {

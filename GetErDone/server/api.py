@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# GetErDone!!!
+# GetErDone API!!!
 
 import argparse
 import calendar
@@ -37,7 +37,7 @@ app = Flask(__name__)
 app_root = os.path.dirname(__file__)
 app_runtime = os.path.join(app_root, '../../../runtime')
 
-site_keyfile = os.path.join(app_runtime, 'site.key')
+site_keyfile = os.path.join(app_runtime, 'api-site.key')
 if(not os.path.exists(site_keyfile)):
     with open(site_keyfile, "w+b") as keyfile:
         keyfile.write(os.urandom(24))
@@ -63,7 +63,7 @@ logger.setLevel(logging.INFO)
 
 fmt = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
 
-fileLogger = logging.FileHandler(os.path.join(app_runtime, 'server.log'))
+fileLogger = logging.FileHandler(os.path.join(app_runtime, 'api-server.log'))
 fileLogger.setFormatter(fmt)
 logger.addHandler(fileLogger)
 
@@ -252,43 +252,6 @@ auth0 = oauth.remote_app('auth0',
                          authorize_url='/authorize')
 
 
-def webapp_requires_auth(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if auth_config['WEBAPP']['auth0_profile_key'] not in session:
-            return redirect('/login/webapp')
-        return f(*args, **kwargs)
-    return decorated
-
-
-@app.route('/callback/webapp')
-def webapp_callback_handler():
-    logger.info('webapp callback called')
-    # Handles response from token endpoint
-    resp = auth0.authorized_response()
-    if resp is None:
-        raise Exception('Access denied: reason=%s error=%s' % (
-            request.args['error_reason'],
-            request.args['error_description']
-        ))
-
-    url = 'https://' + auth_config['WEBAPP']['auth0_domain'] + '/userinfo'
-    headers = {'authorization': 'Bearer ' + resp['access_token']}
-    resp = requests.get(url, headers=headers)
-    userinfo = resp.json()
-
-    # Store the tue user information in flask session.
-    session[auth_config['WEBAPP']['auth0_jwt_payload']] = userinfo
-
-    session[auth_config['WEBAPP']['auth0_profile_key']] = {
-        'user_id': userinfo['sub'],
-        'name': userinfo['name'],
-        'picture': userinfo['picture']
-    }
-
-    return redirect('/assigned')
-
-
 #
 # code associated with a list of tasks
 #
@@ -446,110 +409,6 @@ def task_handler():
         response.status_code = 500
 
     return(response)
-
-
-@app.route('/login/webapp')
-def webapp_login():
-
-    logger.info('webapp login called')
-
-    return auth0.authorize(callback=auth_config['WEBAPP']['auth0_login_callback_url'])
-
-
-@app.route('/logout/webapp')
-def webapp_logout():
-
-    logger.info('webapp logout called')
-
-    session.clear()
-
-    params = {'returnTo': auth_config['WEBAPP']['auth0_logout_callback_url'], 'client_id': auth_config['WEBAPP']['auth0_client_id']}
-
-    return redirect(auth0.base_url + '/v2/logout?' + urllib.urlencode(params))
-
-
-@app.route('/assigned')
-@webapp_requires_auth
-def assigned():
-    logger.info("in assigned!")
-    user_id = session[auth_config['WEBAPP']['auth0_profile_key']]['user_id']
-    if(user_id):
-        logger.info("switch to assign for user %s" % (user_id))
-        return render_template('get-er-assigned.html',
-                               tasks=Storage.fetch_assigned(user_id))
-    else:
-        logger.info('redirecting for login')
-
-    return redirect(url_for('login'))
-
-
-@app.route('/create', methods=['POST', 'GET'])
-@webapp_requires_auth
-def create():
-
-    logger.info('create called')
-
-    user_id = session[auth_config['WEBAPP']['auth0_profile_key']]['user_id']
-
-    if(user_id):
-
-        if(request.method == 'POST'):
-
-            logger.info('create task')
-
-            data = {}
-            data['done'] = False
-            data['order'] = calendar.timegm(time.gmtime())
-            data['title'] = request.form['title']
-            data['priority'] = request.form['priority']
-            data['assign_to'] = request.form['assigned']
-
-            Storage.store(user_id, data)
-
-            return redirect(url_for('assigned'))
-
-        else:
-            logger.info("switch to create for user %s" % (user_id))
-            return render_template('get-er-created.html',
-                                   users=Storage.fetch_users(user_id))
-
-    else:
-        logger.error('task list unknown headers: %s' % (request.headers))
-
-    return redirect(url_for('login/webapp'))
-
-
-@app.route('/')
-def index():
-
-    logger.info('index called')
-
-    c = render_template('index.html',
-                        site_state='not getting authorization in headers on api calls, so task list is not saved...')
-
-    return c
-
-
-@app.route('/get-er-done')
-def get_er_done():
-
-    logger.info('get_er_done called')
-
-    c = render_template('get-er-done.html',
-                        site_state='not getting authorization in headers on api calls, so task list is not saved...')
-
-    return c
-
-
-@app.route('/get-er-done/script')
-def get_er_done_script():
-
-    logger.info('serving get-er-donejs template')
-
-    # only pass the SPA config to avoid risk of exposing WEBAPP secrets
-    c = render_template('get-er-done.js', auth_config=auth_config['SPA'])
-
-    return c
 
 
 def main():
