@@ -22,7 +22,7 @@ from flask_cors import cross_origin
 
 from flask_oauthlib.client import OAuth
 
-import jwt
+# import jwt
 # from Crypto.PublicKey import RSA
 
 # from jose import jwt

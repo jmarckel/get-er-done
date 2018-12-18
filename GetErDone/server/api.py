@@ -3,6 +3,8 @@
 # GetErDone API!!!
 
 import argparse
+import copy
+import base64
 import calendar
 import json
 import logging
@@ -17,15 +19,12 @@ import urllib
 from functools import wraps
 
 import flask
-from flask import Flask, redirect, request, session, jsonify, render_template, url_for, _request_ctx_stack
-from flask_cors import cross_origin
+from flask import Flask, redirect, request, session, jsonify, render_template, url_for, _request_ctx_stack, g
+from flask_cors import CORS, cross_origin
 
 from flask_oauthlib.client import OAuth
 
-import jwt
-# from Crypto.PublicKey import RSA
-
-# from jose import jwt
+from jose import jwt
 
 from six.moves.urllib.request import urlopen
 
@@ -33,6 +32,7 @@ from . import Storage
 
 # initial setup for flask
 app = Flask(__name__)
+CORS(app)
 
 app_root = os.path.dirname(__file__)
 app_runtime = os.path.join(app_root, '../../../runtime')
@@ -98,13 +98,13 @@ def handle_auth_error(ex):
 # SPA auth code
 #
 
-def get_token_auth_header():
+def get_access_token():
     """Obtains the access token from the Authorization Header
     """
-    logger.info('get_token_auth_header()')
+    logger.info('get_access_token()')
     auth = request.headers.get("Authorization", None)
     if not auth:
-        logger.error('get_token_auth_header() no auth')
+        logger.error('get_access_token() no Authorization header')
         logger.error('headers:\n%s' % (request.headers))
         raise AuthError({"code": "authorization_header_missing",
                         "description":
@@ -113,17 +113,17 @@ def get_token_auth_header():
     parts = auth.split()
 
     if parts[0].lower() != "bearer":
-        logger.error('get_token_auth_header() invalid header')
+        logger.error('get_access_token() invalid header')
         raise AuthError({"code": "invalid_header",
                         "description":
                             "Authorization header must start with"
                             " Bearer"}, 401)
     elif len(parts) == 1:
-        logger.error('get_token_auth_header() not enough parts')
+        logger.error('get_access_token() not enough parts')
         raise AuthError({"code": "invalid_header",
                         "description": "Token not found"}, 401)
     elif len(parts) > 2:
-        logger.error('get_token_auth_header() too many parts')
+        logger.error('get_access_token() too many parts')
         raise AuthError({"code": "invalid_header",
                         "description":
                             "Authorization header must be"
@@ -139,7 +139,7 @@ def spa_requires_scope(required_scope):
     Args:
         required_scope (str): The scope required to access the resource
     """
-    token = get_token_auth_header()
+    token = get_access_token()
     unverified_claims = jwt.get_unverified_claims(token)
     if unverified_claims.get("scope"):
         token_scopes = unverified_claims["scope"].split()
@@ -148,6 +148,13 @@ def spa_requires_scope(required_scope):
                 return True
     return False
 
+def wrap(k):
+    head = "-----BEGIN CERTIFICATE-----\n"
+    tail = "-----END CERTIFICATE-----\n"
+
+    logger.info("wrap(): k is type %s" % (type(k)))
+    
+    return b"%s%s\n%s" % (head, k, tail)
 
 def spa_requires_auth(f):
     """Determines if the access token is valid
@@ -155,18 +162,13 @@ def spa_requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
 
-        logger.info('spa_requires_auth()')
+        logger.info('spa_requires_auth() %s' % (request.method))
 
-        token = get_token_auth_header()
-        logger.info('spa_requires_auth() have token: ' + token)
-        url = "https://" + auth_config['SPA']['auth0_domain'] + "/.well-known/jwks.json"
-        jsonurl = urlopen(url)
-        logger.info('spa_requires_auth() fetched well known keys from: ' + url)
-        data = jsonurl.read()
-        jwks = json.loads(data.decode('utf8'))
-        logger.info('spa_requires_auth() jwks: ' + data.decode('utf8'))
+        access_token = get_access_token()
+        logger.info('spa_requires_auth() have token: ' + access_token)
+
         try:
-            unverified_header = jwt.get_unverified_header(token)
+            unverified_header = jwt.get_unverified_header(access_token)
         except jwt.exceptions.DecodeError as e:
             logger.error('spa_requires_auth() invalid header: decode error ' + e.__str__())
             raise
@@ -180,13 +182,29 @@ def spa_requires_auth(f):
                             "description":
                                 "Invalid header. "
                                 "Use an RS256 signed JWT Access Token"}, 401)
-        rsa_key = {}
+
+        # fetch the auth0 well known keys
+        url = "https://" + auth_config['SPA']['auth0_domain'] + "/.well-known/jwks.json"
+        jsonurl = urlopen(url)
+        logger.info('spa_requires_auth() fetched well known keys from: ' + url)
+        data = jsonurl.read()
+        jwks = json.loads(data.decode('utf8'))
+        logger.info('spa_requires_auth() jwks: ' + data.decode('utf8'))
+
+        public_key = None
         for key in jwks["keys"]:
             if key["kid"] == unverified_header["kid"]:
 
                 logger.info('spa_requires_auth() key id matched')
                 # do we really need to keep looping after here? I know the array should be small ...
 
+                # logger.info("key %s" % (wrap(key['x5c'][0])))
+
+                # cert = load_pem_x509_certificate(wrap(key['x5c'][0]), default_backend())
+                # logger.info('have cert')
+                # public_key = cert.public_key()
+
+                public_key = key
                 rsa_key = {
                     "kty": key["kty"],
                     "kid": key["kid"],
@@ -195,12 +213,13 @@ def spa_requires_auth(f):
                     "e": key["e"]
                 }
 
-        if rsa_key:
+
+        if public_key:
             try:
-                logger.info("spa_requires_auth() with rsa key for token '%s'" % (token))
+                logger.info("spa_requires_auth() with rsa key for token '%s'" % (access_token))
                 payload = jwt.decode(
-                    token,
-                    rsa_key,
+                    access_token,
+                    key=public_key,
                     algorithms=["RS256"],
                     audience=auth_config['SPA']['auth0_audience'],
                     issuer="https://" + auth_config['SPA']['auth0_domain'] + "/"
@@ -223,8 +242,9 @@ def spa_requires_auth(f):
                                     "Unable to parse authentication"
                                     " token. " + e.__str__()}, 401)
 
-            logger.info('spa_requires_auth() all good')
-            _request_ctx_stack.top.current_user = payload
+            logger.info('spa_requires_auth() all good!\n%s' % (payload))
+            # _request_ctx_stack.top.current_user = payload
+            g.authd_user = copy.deepcopy(payload)
             return f(*args, **kwargs)
 
         logger.error('spa_requires_auth() no appropriate key')
@@ -261,7 +281,7 @@ def task_list_json_delete_handler():
     response = None
 
     try:
-        content = Storage.delete_all(session['username'])
+        content = Storage.delete_all(g.authd_user['sub'])
         response = jsonify(content)
         response.status_code = 200
     except(Storage.StorageException) as e:
@@ -277,7 +297,7 @@ def task_list_json_get_handler():
     response = None
 
     try:
-        content = Storage.fetch_all(session['username'])
+        content = Storage.fetch_all(g.authd_user['sub'])
         response = jsonify(content)
         response.status_code = 200
     except(Storage.StorageException) as e:
@@ -295,8 +315,8 @@ def task_list_json_post_handler():
     logger.debug("json post: " + json.dumps(request.json))
 
     try:
-        request.json['assign_to'] = session['username']
-        Storage.store(session['username'], request.json)
+        request.json['assign_to'] = g.authd_user['sub']
+        Storage.store(g.authd_user['sub'], request.json)
         response = app.make_response('OK')
         response.status_code = 200
     except(Storage.StorageException) as e:
@@ -332,18 +352,19 @@ def task_list_json_handler():
 
 @app.route('/tasks', methods=['POST', 'GET', 'DELETE'])
 @cross_origin(headers=["Content-Type", "Authorization"])
+@cross_origin(headers=["Access-Control-Allow-Origin", "*"])
 @spa_requires_auth
 def task_list_handler():
 
-    logger.info('tasks called')
+    logger.info("tasks called method = '%s'" % (request.method))
 
     response = None
 
-    if('username' in session):
+    if(g.authd_user != None):
         logger.debug('headers: %s' % (request.headers))
         response = task_list_json_handler()
     else:
-        logger.error('task list unknown headers: %s' % (request.headers))
+        logger.error('authd_user false: %s' % (request.headers))
         response = app.make_response('forbidden')
         response.status_code = 500
 
@@ -359,7 +380,7 @@ def task_json_put_handler():
     response = None
 
     try:
-        Storage.store(session['username'], request.json)
+        Storage.store(g.authd_user['sub'], request.json)
         response = app.make_response('OK')
         response.status_code = 200
     except(Storage.StorageException) as e:

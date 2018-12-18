@@ -26,10 +26,8 @@ setup(
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: Apache License',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
     ],
 
     keywords = 'task',
@@ -38,11 +36,13 @@ setup(
 
     include_package_data=True,
 
-    install_requires = ['Flask', 'Flask-OAuthlib', 'flask-cors', 'jinja2', 'PyJWT', 'six', 'cryptography'],
+    install_requires = ['Flask', 'Flask-OAuthlib', 'flask-cors', 'jinja2', 'python-jose', 'six', 'cryptography'],
 
     entry_points = {
         'console_scripts': [
-            'GetErDone-server=GetErDone.server.main:main',
+            'GetErDone-api=GetErDone.server.api:main',
+            'GetErDone-spa=GetErDone.server.spa:main',
+            'GetErDone-webapp=GetErDone.server.webapp:main',
         ],
     },
 )

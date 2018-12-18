@@ -23,7 +23,7 @@ $(function(){
 
 	model: GetErDoneTask,
 
-        url: "/tasks",
+        url: "http://api.techex.epoxyloaf.com/tasks",
 
 	done: function() {
 	    return this.where({done: true});

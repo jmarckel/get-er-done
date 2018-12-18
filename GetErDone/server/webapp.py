@@ -22,7 +22,7 @@ from flask_cors import cross_origin
 
 from flask_oauthlib.client import OAuth
 
-import jwt
+# import jwt
 # from Crypto.PublicKey import RSA
 
 # from jose import jwt
@@ -122,7 +122,7 @@ def webapp_requires_auth(f):
     return decorated
 
 
-@app.route('/callback/webapp')
+@app.route('/callback')
 def webapp_callback_handler():
     logger.info('webapp callback called')
     # Handles response from token endpoint
@@ -226,10 +226,7 @@ def index():
 
     logger.info('index called')
 
-    c = render_template('index.html',
-                        site_state='not getting authorization in headers on api calls, so task list is not saved...')
-
-    return c
+    return auth0.authorize(callback=auth_config['WEBAPP']['auth0_login_callback_url'])
 
 
 @app.route('/get-er-done')
