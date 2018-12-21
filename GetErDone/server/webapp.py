@@ -122,7 +122,7 @@ def webapp_requires_auth(f):
     return decorated
 
 
-@app.route('/callback')
+@app.route('/callback', methods=['POST', 'GET'])
 def webapp_callback_handler():
     logger.info('webapp callback called')
     # Handles response from token endpoint
@@ -150,7 +150,7 @@ def webapp_callback_handler():
     return redirect('/assigned')
 
 
-@app.route('/login/webapp')
+@app.route('/login')
 def webapp_login():
 
     logger.info('webapp login called')
@@ -158,7 +158,7 @@ def webapp_login():
     return auth0.authorize(callback=auth_config['WEBAPP']['auth0_login_callback_url'])
 
 
-@app.route('/logout/webapp')
+@app.route('/logout')
 def webapp_logout():
 
     logger.info('webapp logout called')
@@ -218,7 +218,7 @@ def create():
     else:
         logger.error('task list unknown headers: %s' % (request.headers))
 
-    return redirect(url_for('login/webapp'))
+    return redirect(url_for('login'))
 
 
 @app.route('/')
@@ -227,28 +227,6 @@ def index():
     logger.info('index called')
 
     return auth0.authorize(callback=auth_config['WEBAPP']['auth0_login_callback_url'])
-
-
-@app.route('/get-er-done')
-def get_er_done():
-
-    logger.info('get_er_done called')
-
-    c = render_template('get-er-done.html',
-                        site_state='not getting authorization in headers on api calls, so task list is not saved...')
-
-    return c
-
-
-@app.route('/get-er-done/script')
-def get_er_done_script():
-
-    logger.info('serving get-er-donejs template')
-
-    # only pass the SPA config to avoid risk of exposing WEBAPP secrets
-    c = render_template('get-er-done.js', auth_config=auth_config['SPA'])
-
-    return c
 
 
 def main():

@@ -1,6 +1,5 @@
 $(function(){
 
-
     var GetErDoneTask = Backbone.Model.extend({
 
 	defaults: function() {
@@ -224,14 +223,12 @@ $(function(){
     logoutBtn.click(logout);
 
     function setSession(authResult) {
-        console.log('setting session');
+
         // Set the time that the access token will expire at
         var expiresAt = JSON.stringify(
             authResult.expiresIn * 1000 + new Date().getTime()
         );
-        console.log('access_token: ' + authResult.accessToken);
-        console.log('id_token: ' + authResult.idToken);
-        console.log('expires_at: ' +  expiresAt);
+
         localStorage.setItem('access_token', authResult.accessToken);
         localStorage.setItem('id_token', authResult.idToken);
         localStorage.setItem('expires_at', expiresAt);
@@ -245,12 +242,15 @@ $(function(){
     }
 
     function logout() {
+
         // Remove tokens and expiry time from localStorage
         localStorage.removeItem('access_token');
         localStorage.removeItem('id_token');
         localStorage.removeItem('expires_at');
+
         displayButtons();
         displayGetErDoneApp();
+
     }
 
     function isAuthenticated() {
