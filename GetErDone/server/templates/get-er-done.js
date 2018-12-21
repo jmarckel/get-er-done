@@ -1,5 +1,6 @@
 $(function(){
 
+
     var GetErDoneTask = Backbone.Model.extend({
 
 	defaults: function() {
@@ -12,7 +13,7 @@ $(function(){
 	},
 
 	toggle: function() {
-	    this.save({done: !this.get("done")}, {beforeSend: addAuthHeaders});
+	    this.save({done: !this.get("done")});
 	}
 
     });
@@ -84,7 +85,7 @@ $(function(){
 	    if (!value) {
 		value = "normal";
 	    }
-            this.model.save({priority: value}, {beforeSend: addAuthHeaders});
+            this.model.save({priority: value});
 	},
 
 	edit: function() {
@@ -97,7 +98,7 @@ $(function(){
 	    if (!value) {
 		this.clear();
 	    } else {
-		this.model.save({title: value}, {beforeSend: addAuthHeaders});
+		this.model.save({title: value});
 		this.$el.removeClass("editing");
 	    }
 	},
@@ -181,7 +182,7 @@ $(function(){
 
 	toggleAllComplete: function () {
 	    var done = this.allCheckbox.checked;
-	    GetErDoneTasks.each(function (task) { task.save({'done': done}, {beforeSend: addAuthHeaders}); });
+	    GetErDoneTasks.each(function (task) { task.save({'done': done}); });
 	}
 
     });
@@ -234,6 +235,13 @@ $(function(){
         localStorage.setItem('access_token', authResult.accessToken);
         localStorage.setItem('id_token', authResult.idToken);
         localStorage.setItem('expires_at', expiresAt);
+
+        var backboneSync = Backbone.sync;
+        Backbone.sync = function (method, model, options) {
+            options.headers = { 'Authorization': 'Bearer ' + localStorage.getItem('access_token')};
+            backboneSync(method, model, options);
+        }
+
     }
 
     function logout() {
@@ -295,7 +303,7 @@ $(function(){
         if (isAuthenticated()) {
             console.log('displaying app');
             getErDoneAppView.css('display', 'inline-block');
-	    GetErDoneTasks.fetch({beforeSend: addAuthHeaders});
+	    GetErDoneTasks.fetch();
         } else {
             console.log('hiding app');
             getErDoneAppView.css('display', 'none');
