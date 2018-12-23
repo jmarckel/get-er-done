@@ -42,6 +42,7 @@ setup(
         'console_scripts': [
             'GetErDone-api=GetErDone.server.api:main',
             'GetErDone-spa=GetErDone.server.spa:main',
+            'GetErDone-site=GetErDone.server.site:main',
             'GetErDone-webapp=GetErDone.server.webapp:main',
         ],
     },

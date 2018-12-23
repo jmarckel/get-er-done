@@ -251,6 +251,8 @@ $(function(){
         displayButtons();
         displayGetErDoneApp();
 
+        webAuth.logout({returnTo: '{{ auth_config['auth0_logout_callback_url'] }}'}, {version: 'v2'});
+
     }
 
     function isAuthenticated() {
