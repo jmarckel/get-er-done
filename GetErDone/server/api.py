@@ -134,7 +134,7 @@ def get_access_token():
 
 
 # UNUSED
-def spa_requires_scope(required_scope):
+def api_requires_scope(required_scope):
     """Determines if the required scope is present in the access token
     Args:
         required_scope (str): The scope required to access the resource
@@ -156,28 +156,28 @@ def wrap(k):
     
     return b"%s%s\n%s" % (head, k, tail)
 
-def spa_requires_auth(f):
+def api_requires_auth(f):
     """Determines if the access token is valid
     """
     @wraps(f)
     def decorated(*args, **kwargs):
 
-        logger.info('spa_requires_auth() %s' % (request.method))
+        logger.info('api_requires_auth() %s' % (request.method))
 
         access_token = get_access_token()
-        logger.info('spa_requires_auth() have token: ' + access_token)
+        logger.info('api_requires_auth() have token: ' + access_token)
 
         try:
             unverified_header = jwt.get_unverified_header(access_token)
         except jwt.exceptions.DecodeError as e:
-            logger.error('spa_requires_auth() invalid header: decode error ' + e.__str__())
+            logger.error('api_requires_auth() invalid header: decode error ' + e.__str__())
             raise
         except jwt.exceptions.InvalidTokenError:
-            logger.error('spa_requires_auth() invalid header')
+            logger.error('api_requires_auth() invalid header')
             raise AuthError({"code": "invalid_header",
                             "description": "Invalid header. Use an RS256 signed JWT Access Token"}, 401)
         if unverified_header["alg"] == "HS256":
-            logger.error('spa_requires_auth() invalid header alg')
+            logger.error('api_requires_auth() invalid header alg')
             raise AuthError({"code": "invalid_header",
                             "description":
                                 "Invalid header. "
@@ -186,25 +186,15 @@ def spa_requires_auth(f):
         # fetch the auth0 well known keys
         url = "https://" + auth_config['SPA']['auth0_domain'] + "/.well-known/jwks.json"
         jsonurl = urlopen(url)
-        logger.info('spa_requires_auth() fetched well known keys from: ' + url)
+        logger.info('api_requires_auth() fetched well known keys from: ' + url)
         data = jsonurl.read()
         jwks = json.loads(data.decode('utf8'))
-        logger.info('spa_requires_auth() jwks: ' + data.decode('utf8'))
+        logger.info('api_requires_auth() jwks: ' + data.decode('utf8'))
 
-        public_key = None
         for key in jwks["keys"]:
             if key["kid"] == unverified_header["kid"]:
 
-                logger.info('spa_requires_auth() key id matched')
-                # do we really need to keep looping after here? I know the array should be small ...
-
-                # logger.info("key %s" % (wrap(key['x5c'][0])))
-
-                # cert = load_pem_x509_certificate(wrap(key['x5c'][0]), default_backend())
-                # logger.info('have cert')
-                # public_key = cert.public_key()
-
-                public_key = key
+                logger.info('api_requires_auth() key id matched')
                 rsa_key = {
                     "kty": key["kty"],
                     "kid": key["kid"],
@@ -212,44 +202,47 @@ def spa_requires_auth(f):
                     "n": key["n"],
                     "e": key["e"]
                 }
+                break
 
 
-        if public_key:
+        if rsa_key:
             try:
-                logger.info("spa_requires_auth() with rsa key for token '%s'" % (access_token))
+                logger.info("api_requires_auth() with rsa key for token '%s'" % (access_token))
                 payload = jwt.decode(
                     access_token,
-                    key=public_key,
+                    key=rsa_key,
                     algorithms=["RS256"],
                     audience=auth_config['SPA']['auth0_audience'],
                     issuer="https://" + auth_config['SPA']['auth0_domain'] + "/"
                 )
-                logger.info('spa_requires_auth() key payload decoded')
+                logger.info('api_requires_auth() key payload decoded')
             except jwt.exceptions.ExpiredSignatureError:
-                logger.error('spa_requires_auth() expired signature')
+                logger.error('api_requires_auth() expired signature')
                 raise AuthError({"code": "token_expired",
                                 "description": "token is expired"}, 401)
-            # except jwt.exceptions.JWTClaimsError:
-                # logger.error('spa_requires_auth() invalid claims')
-                # raise AuthError({"code": "invalid_claims",
-                                # "description":
-                                    # "incorrect claims,"
-                                    # " please check the audience and issuer"}, 401)
+            except jwt.exceptions.JWTClaimsError:
+                logger.error('api_requires_auth() invalid claims')
+                raise AuthError({"code": "invalid_claims",
+                                "description":
+                                    "incorrect claims,"
+                                    " please check the audience and issuer"}, 401)
             except Exception as e:
-                logger.error('spa_requires_auth() exception')
+                logger.error('api_requires_auth() exception')
                 raise AuthError({"code": "invalid_header",
                                 "description":
                                     "Unable to parse authentication"
                                     " token. " + e.__str__()}, 401)
 
-            logger.info('spa_requires_auth() all good!\n%s' % (payload))
+            logger.info('api_requires_auth() all good!\n%s' % (payload))
             # _request_ctx_stack.top.current_user = payload
             g.authd_user = copy.deepcopy(payload)
             return f(*args, **kwargs)
 
-        logger.error('spa_requires_auth() no appropriate key')
+        logger.error('api_requires_auth() no appropriate key')
+
         raise AuthError({"code": "invalid_header",
                         "description": "Unable to find appropriate key"}, 401)
+
     return decorated
 
 
@@ -353,7 +346,7 @@ def task_list_json_handler():
 @app.route('/tasks', methods=['POST', 'GET', 'DELETE'])
 @cross_origin(headers=["Content-Type", "Authorization"])
 @cross_origin(headers=["Access-Control-Allow-Origin", "*"])
-@spa_requires_auth
+@api_requires_auth
 def task_list_handler():
 
     logger.info("tasks called method = '%s'" % (request.method))
@@ -418,7 +411,7 @@ def task_html_handler():
 # UNUSED ...
 @app.route('/tasks/<uuid:task_id>', methods=['PUT', 'GET', 'DELETE'])
 @cross_origin(headers=["Content-Type", "Authorization"])
-@spa_requires_auth
+@api_requires_auth
 def task_handler():
 
     response = None
