@@ -137,7 +137,6 @@ $(function(){
 	    this.footer = this.$('footer');
 	    this.main = $('#main');
 
-	    // GetErDoneTasks.fetch();
 	},
 
 	render: function() {
@@ -235,7 +234,8 @@ $(function(){
 
         var backboneSync = Backbone.sync;
         Backbone.sync = function (method, model, options) {
-            options.headers = { 'Authorization': 'Bearer ' + localStorage.getItem('access_token')};
+            options.headers = {'Authorization': 'Bearer ' 
+                                                + localStorage.getItem('access_token')};
             backboneSync(method, model, options);
         }
 
@@ -251,7 +251,8 @@ $(function(){
         displayButtons();
         displayGetErDoneApp();
 
-        webAuth.logout({returnTo: '{{ auth_config['auth0_logout_callback_url'] }}'}, {version: 'v2'});
+        webAuth.logout({returnTo: '{{ auth_config['auth0_logout_callback_url'] }}'}, 
+                       {version: 'v2'});
 
     }
 
@@ -263,15 +264,6 @@ $(function(){
             return(1);
         }
         return(0);
-    }
-
-    function addAuthHeaders(xhr) {
-        console.log('addAuthHeaders()');
-        if(isAuthenticated()) {
-            console.log('adding auth headers');
-            console.log('access token: ' + localStorage.getItem('access_token'));
-            xhr.setRequestHeader( 'Authorization', 'Bearer ' + localStorage.getItem('access_token'));
-        }
     }
 
     function handleAuthentication() {
