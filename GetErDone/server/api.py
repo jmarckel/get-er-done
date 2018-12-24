@@ -19,10 +19,8 @@ import urllib
 from functools import wraps
 
 import flask
-from flask import Flask, redirect, request, session, jsonify, render_template, url_for, _request_ctx_stack, g
+from flask import Flask, redirect, request, jsonify, _request_ctx_stack, g
 from flask_cors import CORS, cross_origin
-
-from flask_oauthlib.client import OAuth
 
 from jose import jwt
 
@@ -244,25 +242,6 @@ def api_requires_auth(f):
                         "description": "Unable to find appropriate key"}, 401)
 
     return decorated
-
-
-#
-# webapp auth code
-#
-
-oauth = OAuth(app)
-
-auth0 = oauth.remote_app('auth0',
-                         consumer_key=auth_config['WEBAPP']['auth0_client_id'],
-                         consumer_secret=auth_config['WEBAPP']['auth0_client_secret'],
-                         request_token_params={
-                             'scope': 'openid profile',
-                             'audience': auth_config['WEBAPP']['auth0_audience']
-                         },
-                         base_url = 'https://%s' % (auth_config['WEBAPP']['auth0_domain']),
-                         access_token_method='POST',
-                         access_token_url='/oauth/token',
-                         authorize_url='/authorize')
 
 
 #
