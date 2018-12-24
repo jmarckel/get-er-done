@@ -1,4 +1,4 @@
-.. GetErDone-webapp
+.. _webapp:
 
 ================
 GetErDone WebApp

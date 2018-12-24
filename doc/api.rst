@@ -1,6 +1,6 @@
-.. GetErDone-api
+.. _api:
 
-Get Er Done API
+GetErDone API
 ===============
 
 The `GetErDone-API`_ is a html based tool allowing managers to interact

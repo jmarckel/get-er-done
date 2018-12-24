@@ -1,4 +1,4 @@
-.. GetErDone-SPA
+.. _spa:
 
 GetErDone SPA
 =============

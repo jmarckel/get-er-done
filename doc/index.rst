@@ -1,10 +1,9 @@
-.. Get Er Done!
 
-============
-GetErDone!
-============
+=========
+GetErDone
+=========
 
-*GetErDone* is a technical exercise designed to demonstrate use cases
+**GetErDone** is a technical exercise designed to demonstrate use cases
 for authorization and authentication workflows of network based applications
 using `OAuth2`_ and `OpenID_Connect`_. 
 

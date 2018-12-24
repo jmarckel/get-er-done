@@ -17,26 +17,26 @@
       <nav class="navbar navbar-default">
         <div class="container-fluid">
           <div class="navbar-header">
-  
-            <button id="btn-login" class="btn btn-primary btn-margin">
-              Log In
-            </button>
+            <table width='100%'>
+            <tr><td>
+	      <h1>GetErDone-SPA</h1><br/>
+              <label>{{ site_state }}<label>
+            </td><td align='right'>
+              <button id="btn-login" class="btn btn-primary btn-margin">
+                Log In
+              </button>
 
-            <button id="btn-logout" class="btn btn-primary btn-margin">
-                Log Out
-            </button>
-
-            <label>{{ site_state }}<label>
-
+              <button id="btn-logout" class="btn btn-primary btn-margin">
+                  Log Out
+              </button>
+            </td></tr>
+            </table>
           </div>
         </div>
       </nav>
 
       <div id="get-er-done-spa-view">
         <div id="get-er-done-spa">
-
-          <a href='/assigned'>manage</a>
-
           <header>
 	    <h1>Assigned Tasks</h1>
 	    <input id="new-self-task" type="text" placeholder="New self task">
