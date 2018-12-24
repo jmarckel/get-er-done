@@ -1,11 +1,5 @@
 # GetErDone
 
-Work in progress here...
-
-For some reason I can't determine, the claims are rejected in the SPA...
-
-Otherwise, there is some interesting stuff in here and I have learned a lot.
-
 This is a technical exercise where I am building an application suite using a
 mix of technologies to demonstrate the integration of external authentication
 and authorization workflows into web based API and site.
@@ -19,19 +13,19 @@ Flask, Jinja2, Backbone.js, Auth0, OpenID Connect
 { 
     "SPA": { 
         "algorithms": ["RS256"],
-        "auth0_audience": "https://techex-epoxyloaf-com.auth0.com/userinfo",
-        "auth0_callback_url": "http://127.0.0.1:5000/callback",
-        "auth0_client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        "auth0_domain": "techex-epoxyloaf-com.auth0.com",
-        "auth0_login_callback_url": "http://127.0.0.1:5000/get-er-done"
+        "auth0_audience": "http://api.your.domain.com",
+        "auth0_client_id": "xxxxxxxxx-client-id-here-xxxxxxx",
+        "auth0_domain": "your.domain-com.auth0.com",
+        "auth0_login_callback_url": "http://spa.your.domain.com/get-er-done",
+        "auth0_logout_callback_url": "http://your.domain.com/"
     },
     "WEBAPP": {
-        "auth0_login_callback_url": "http://127.0.0.1:5000/callback/webapp",
-        "auth0_logout_callback_url": "http://127.0.0.1:5000/",
-        "auth0_client_id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        "auth0_client_secret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        "auth0_domain": "techex-epoxyloaf-com.auth0.com",
-        "auth0_audience": "https://techex-epoxyloaf-com.auth0.com/userinfo",
+        "auth0_login_callback_url": "http://webapp.your.domain.com/callback",
+        "auth0_logout_callback_url": "http://your.domain.com/",
+        "auth0_client_id": "xxxxxxxxx-client-id-here-xxxxxxx",
+        "auth0_client_secret": "xxxxxxxxx-client-secret-here-xxxxxxx",
+        "auth0_domain": "your.domain-com.auth0.com",
+        "auth0_audience": "http://api.your.domain.com",
         "auth0_profile_key": "profile",
         "auth0_jwt_payload": "jwt_payload"
     }
@@ -107,35 +101,111 @@ sudo chown www-data /var/www/<your site>/runtime
 
 ## Define the site in Apache:
 
-### Edit /etc/apache2/sites-enabled/<your site>.conf 
+### create /etc/apache2/sites-enabled/service.<your site>.conf for
+### each service - api, spa, and webapp
 
 I defined the following to get things working in Apache2 on Ubuntu
 
+Main site:
+
 ```
 <virtualhost *:80>
-    ServerName <your site>
+    ServerName your.domain.com
+    DocumentRoot "/var/www/your.domain.com/html"
+</virtualhost>
+```
 
-    WSGIDaemonProcess GetErDoneSuite user=www-data group=www-data threads=5 home=/var/www/<your site>/
-    WSGIScriptAlias / /var/www/<your site>/GetErDoneSuite.wsgi
+Site 'api':
 
-    <directory /var/www/<your site>>
-        WSGIProcessGroup GetErDoneSuite
+```
+<virtualhost *:80>
+    ServerName api.your.domain.com
+
+    WSGIDaemonProcess GetErDoneSuite-api user=www-data group=www-data threads=5 home=/var/www/your.domain.com/
+    WSGIScriptAlias / /var/www/your.domain.com/GetErDoneSuite-api.wsgi
+
+    Alias "/static" "/var/www/your.domain.com/python/GetErDone/server/static"
+
+    <directory /var/www/your.domain.com>
+        WSGIPassAuthorization On
+        WSGIProcessGroup GetErDoneSuite-api
         WSGIApplicationGroup %{GLOBAL}
         WSGIScriptReloading On
-        WSGIPassAuthorization On
-        <Files GetErDoneSuite.wsgi>
+        <Files GetErDoneSuite-api.wsgi>
             Require all granted
         </Files>
     </directory>
-    <directory /var/www/<your site>/runtime>
+    <directory /var/www/your.domain.com/runtime>
         Require all denied
     </directory>
-    <directory /var/www/<your site>/python>
+    <directory /var/www/your.domain.com/python>
         Require all denied
     </directory>
+    <directory /var/www/your.domain.com/python/GetErDone/server/static/>
+        Require all granted
+    </directory>
+</virtualhost>
+```
 
-    Alias "/static" "/var/www/<your site>/python/GetErDone/server/static"
-    <directory /var/www/<your site>/python/GetErDone/server/static/>
+Site 'spa':
+
+```
+<virtualhost *:80>
+    ServerName spa.your.domain.com
+
+    WSGIDaemonProcess GetErDoneSuite-spa user=www-data group=www-data threads=5 home=/var/www/your.domain.com/
+    WSGIScriptAlias / /var/www/your.domain.com/GetErDoneSuite-spa.wsgi
+
+    Alias "/static" "/var/www/your.domain.com/python/GetErDone/server/static"
+
+    <directory /var/www/your.domain.com>
+        WSGIPassAuthorization On
+        WSGIProcessGroup GetErDoneSuite-spa
+        WSGIApplicationGroup %{GLOBAL}
+        WSGIScriptReloading On
+        <Files GetErDoneSuite-spa.wsgi>
+            Require all granted
+        </Files>
+    </directory>
+    <directory /var/www/your.domain.com/runtime>
+        Require all denied
+    </directory>
+    <directory /var/www/your.domain.com/python>
+        Require all denied
+    </directory>
+    <directory /var/www/your.domain.com/python/GetErDone/server/static/>
+        Require all granted
+    </directory>
+</virtualhost>
+```
+
+Site 'webapp':
+
+```
+<virtualhost *:80>
+    ServerName webapp.your.domain.com
+
+    WSGIDaemonProcess GetErDoneSuite-webapp user=www-data group=www-data threads=5 home=/var/www/your.domain.com/
+    WSGIScriptAlias / /var/www/your.domain.com/GetErDoneSuite-webapp.wsgi
+
+    Alias "/static" "/var/www/your.domain.com/python/GetErDone/server/static"
+
+    <directory /var/www/your.domain.com>
+        WSGIPassAuthorization On
+        WSGIProcessGroup GetErDoneSuite-webapp
+        WSGIApplicationGroup %{GLOBAL}
+        WSGIScriptReloading On
+        <Files GetErDoneSuite-webapp.wsgi>
+            Require all granted
+        </Files>
+    </directory>
+    <directory /var/www/your.domain.com/runtime>
+        Require all denied
+    </directory>
+    <directory /var/www/your.domain.com/python>
+        Require all denied
+    </directory>
+    <directory /var/www/your.domain.com/python/GetErDone/server/static/>
         Require all granted
     </directory>
 </virtualhost>
