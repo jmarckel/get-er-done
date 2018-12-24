@@ -18,14 +18,8 @@ from functools import wraps
 
 import flask
 from flask import Flask, redirect, request, session, jsonify, render_template, url_for, _request_ctx_stack
-from flask_cors import cross_origin
 
 from flask_oauthlib.client import OAuth
-
-# import jwt
-# from Crypto.PublicKey import RSA
-
-# from jose import jwt
 
 from six.moves.urllib.request import urlopen
 
@@ -44,9 +38,6 @@ if(not os.path.exists(site_keyfile)):
     os.chmod(site_keyfile, stat.S_IRUSR)
 
 # read the secret key
-#
-# hmm, is this a conflict?
-#
 with open(site_keyfile, "rb") as keyfile:
     app.secret_key = keyfile.read()
 
@@ -117,7 +108,7 @@ def webapp_requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if auth_config['WEBAPP']['auth0_profile_key'] not in session:
-            return redirect('/login/webapp')
+            return redirect(url_for('webapp_login'))
         return f(*args, **kwargs)
     return decorated
 
@@ -182,7 +173,7 @@ def assigned():
     else:
         logger.info('redirecting for login')
 
-    return redirect(url_for('login'))
+    return redirect(url_for('webapp_login'))
 
 
 @app.route('/create', methods=['POST', 'GET'])
@@ -218,15 +209,13 @@ def create():
     else:
         logger.error('task list unknown headers: %s' % (request.headers))
 
-    return redirect(url_for('login'))
+    return redirect(url_for('webapp_login'))
 
 
 @app.route('/')
 def index():
 
-    logger.info('index called')
-
-    return auth0.authorize(callback=auth_config['WEBAPP']['auth0_login_callback_url'])
+    return redirect(url_for('webapp_login'))
 
 
 def main():

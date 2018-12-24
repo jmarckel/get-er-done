@@ -17,19 +17,7 @@ import urllib
 from functools import wraps
 
 import flask
-from flask import Flask, redirect, request, session, jsonify, render_template, url_for, _request_ctx_stack
-from flask_cors import cross_origin
-
-from flask_oauthlib.client import OAuth
-
-# import jwt
-# from Crypto.PublicKey import RSA
-
-# from jose import jwt
-
-from six.moves.urllib.request import urlopen
-
-from . import Storage
+from flask import Flask, redirect, request, jsonify, render_template, url_for
 
 # initial setup for flask
 app = Flask(__name__)
@@ -44,9 +32,6 @@ if(not os.path.exists(site_keyfile)):
     os.chmod(site_keyfile, stat.S_IRUSR)
 
 # read the secret key
-#
-# hmm, is this a conflict?
-#
 with open(site_keyfile, "rb") as keyfile:
     app.secret_key = keyfile.read()
 
