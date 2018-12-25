@@ -24,7 +24,7 @@ allows users to view their assigned tasks, create their own tasks, and
 mark their tasks completed. 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    spa
    webapp
