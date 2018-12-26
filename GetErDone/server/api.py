@@ -269,7 +269,12 @@ def task_list_json_get_handler():
     response = None
 
     try:
-        content = Storage.fetch_all(g.authd_user['sub'])
+        if('assigned_by' in request.args):
+            logger.info('getting tasks assigned by user %s' % (g.authd_user['sub']))
+            content = Storage.fetch_assigned(g.authd_user['sub'])
+        else:
+            logger.info('getting tasks assigned to user %s' % (g.authd_user['sub']))
+            content = Storage.fetch_all(g.authd_user['sub'])
         response = jsonify(content)
         response.status_code = 200
     except(Storage.StorageException) as e:
@@ -333,7 +338,7 @@ def task_list_handler():
     response = None
 
     if(g.authd_user != None):
-        logger.debug('headers: %s' % (request.headers))
+        logger.info('headers: %s' % (request.headers))
         response = task_list_json_handler()
     else:
         logger.error('authd_user false: %s' % (request.headers))

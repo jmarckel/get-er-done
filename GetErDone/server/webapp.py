@@ -117,25 +117,26 @@ def webapp_requires_auth(f):
 def webapp_callback_handler():
     logger.info('webapp callback called')
     # Handles response from token endpoint
-    resp = auth0.authorized_response()
-    if resp is None:
+    auth_resp = auth0.authorized_response()
+    if auth_resp is None:
         raise Exception('Access denied: reason=%s error=%s' % (
             request.args['error_reason'],
             request.args['error_description']
         ))
 
     url = 'https://' + auth_config['WEBAPP']['auth0_domain'] + '/userinfo'
-    headers = {'authorization': 'Bearer ' + resp['access_token']}
-    resp = requests.get(url, headers=headers)
-    userinfo = resp.json()
+    headers = {'authorization': 'Bearer ' + auth_resp['access_token']}
+    userinfo_resp = requests.get(url, headers=headers)
+    userinfo = userinfo_resp.json()
 
-    # Store the tue user information in flask session.
+    # Store the the user information in flask session.
     session[auth_config['WEBAPP']['auth0_jwt_payload']] = userinfo
 
     session[auth_config['WEBAPP']['auth0_profile_key']] = {
         'user_id': userinfo['sub'],
         'name': userinfo['name'],
-        'picture': userinfo['picture']
+        'picture': userinfo['picture'],
+        'access_token': auth_resp['access_token']
     }
 
     return redirect('/assigned')
@@ -161,6 +162,21 @@ def webapp_logout():
     return redirect(auth0.base_url + '/v2/logout?' + urllib.urlencode(params))
 
 
+def api_fetch_assigned_tasks(user_id):
+
+    # tasks assigned by user_id
+
+    url = "%s/tasks?assigned_by=%s" % (auth_config['WEBAPP']['api_server'], user_id)
+    logger.info('fetching tasks from %s' % (url))
+
+    bearer = session[auth_config['WEBAPP']['auth0_profile_key']]['access_token']
+    headers = {'Authorization': 'Bearer ' + bearer}
+    resp = requests.get(url, headers=headers)
+    tasks = resp.json()
+
+    # return Storage.fetch_assigned(user_id)
+    return tasks
+
 @app.route('/assigned')
 @webapp_requires_auth
 def assigned():
@@ -169,12 +185,18 @@ def assigned():
     if(user_id):
         logger.info("switch to assign for user %s" % (user_id))
         return render_template('get-er-assigned.html',
-                               tasks=Storage.fetch_assigned(user_id))
+                               tasks=api_fetch_assigned_tasks(user_id))
     else:
         logger.info('redirecting for login')
 
     return redirect(url_for('webapp_login'))
 
+
+def api_store_task(user_id, task):
+    Storage.store(user_id, task)
+
+def api_fetch_users(user_id):
+    return Storage.fetch_users(user_id)
 
 @app.route('/create', methods=['POST', 'GET'])
 @webapp_requires_auth
@@ -197,14 +219,14 @@ def create():
             data['priority'] = request.form['priority']
             data['assign_to'] = request.form['assigned']
 
-            Storage.store(user_id, data)
+            api_store_task(user_id, data)
 
             return redirect(url_for('assigned'))
 
         else:
             logger.info("switch to create for user %s" % (user_id))
             return render_template('get-er-created.html',
-                                   users=Storage.fetch_users(user_id))
+                                   users=api_fetch_users(user_id))
 
     else:
         logger.error('task list unknown headers: %s' % (request.headers))
