@@ -181,9 +181,20 @@ def store(user_id, data):
 
     conn = sqlite3.connect(databaseName)
     c = conn.cursor()
-    c.execute("UPDATE tasks SET status = ?, status_dt = ? WHERE task_id = ? and user_id = ?", ('HISTORY', stor_dt, data['order'], user_id,))
-    c.execute("INSERT INTO tasks (user_id, task_id, title, priority, done, status, status_dt, create_dt, assigned_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-              (data['assign_to'], data['order'], data['title'], data['priority'], done_status, 'ACTIVE', stor_dt, stor_dt, user_id,))
+
+    # roll any previous entry off into history
+    c.execute("UPDATE tasks SET status = ?, status_dt = ? "
+              "WHERE task_id = ? and user_id = ?",
+              ('HISTORY', stor_dt, data['order'], user_id,))
+
+    # insert the new record
+    c.execute("INSERT INTO tasks (user_id, task_id, title,"
+              " priority, done, status, status_dt, create_dt,"
+              " assigned_by) "
+              "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+              (data['assign_to'], data['order'], data['title'], 
+              data['priority'], done_status, 'ACTIVE', 
+              stor_dt, stor_dt, user_id,))
     conn.commit()
 
     logger.info("stored user %s order %s title '%s'" % (user_id, data['order'], data['title']))

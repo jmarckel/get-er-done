@@ -193,7 +193,13 @@ def assigned():
 
 
 def api_store_task(user_id, task):
-    Storage.store(user_id, task)
+    url = "%s/tasks" % (auth_config['WEBAPP']['api_server'])
+    logger.info('storing a task to %s' % (url))
+
+    bearer = session[auth_config['WEBAPP']['auth0_profile_key']]['access_token']
+    headers = {'Authorization': 'Bearer ' + bearer}
+
+    resp = requests.post(url, headers=headers, json=task)
 
 def api_fetch_users(user_id):
     return Storage.fetch_users(user_id)

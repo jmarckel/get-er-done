@@ -15,6 +15,7 @@ import stat
 import tempfile
 import time
 import urllib
+import traceback
 
 from functools import wraps
 
@@ -74,12 +75,13 @@ logger.addHandler(fileLogger)
 class AuthError(Exception):
     def __init__(self, error, status_code):
         self.error = error
+        self.stack_trace = traceback.extract_tb()
         self.status_code = status_code
 
 
 @app.errorhandler(AuthError)
 def handle_auth_error(ex):
-    logger.error("auth error accessing '%s:%s': %s" % (request.method, request.url, json.dumps(ex.error)))
+    logger.error("auth error accessing '%s:%s': %s\n\nStack:\n%s" % (request.method, request.url, json.dumps(ex.error), ex.stack_trace))
     response = jsonify(ex.error)
     response.status_code = ex.status_code
     return response
@@ -278,7 +280,8 @@ def task_list_json_get_handler():
         response = jsonify(content)
         response.status_code = 200
     except(Storage.StorageException) as e:
-        logger.error("fetch all exception '%s' headers:\n%s" % (e.message, request.headers))
+        logger.error("fetch all exception '%s' headers:\n%s" % 
+                    (e.message, request.headers))
         response = app.make_response(e.message)
         response.status_code = 500
 
@@ -289,15 +292,23 @@ def task_list_json_post_handler():
 
     response = None
 
-    logger.debug("json post: " + json.dumps(request.json))
+    logger.info("json post: " + json.dumps(request.json))
 
     try:
-        request.json['assign_to'] = g.authd_user['sub']
+        if('assign_to' in request.args):
+            request.json['assign_to'] = request.args['assign_to']
+        else:
+            if('assign_to' not in request.json):
+                request.json['assign_to'] = g.authd_user['sub']
+
         Storage.store(g.authd_user['sub'], request.json)
+
         response = app.make_response('OK')
         response.status_code = 200
+
     except(Storage.StorageException) as e:
-        logger.error("storage exception '%s' headers:\n%s" % (e.message, request.headers))
+        logger.error("task_list_json_post_handler exception '%s' headers:\n%s" % 
+                    (e.message, request.headers))
         response = app.make_response(e.message)
         response.status_code = 500
 
