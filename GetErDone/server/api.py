@@ -81,14 +81,25 @@ class AuthError(Exception):
 
 @app.errorhandler(AuthError)
 def handle_auth_error(ex):
-    logger.error("auth error accessing '%s:%s': %s\n\nStack:\n%s" % (request.method, request.url, json.dumps(ex.error), ex.stack_trace))
+    logger.error("auth error '%s:%s': %s\n\nStack:\n%s"
+                 % (request.method,
+                    request.url,
+                    json.dumps(ex.error),
+                    ex.stack_trace))
+
     response = jsonify(ex.error)
     response.status_code = ex.status_code
     return response
 
+
 @app.errorhandler(Exception)
 def handle_auth_error(ex):
-    logger.error("auth exception accessing '%s:%s': %s" % (request.method, request.url, ex.__str__()))
+    logger.error("auth exception '%s:%s': %s\n\nStack:\n%s"
+                 % (request.method,
+                    request.url,
+                    ex.__str__(),
+                    traceback.extract_tb()))
+
     response = jsonify(ex.__str__())
     response.status_code = 500
     return response
@@ -148,13 +159,6 @@ def api_requires_scope(required_scope):
                 return True
     return False
 
-def wrap(k):
-    head = "-----BEGIN CERTIFICATE-----\n"
-    tail = "-----END CERTIFICATE-----\n"
-
-    logger.info("wrap(): k is type %s" % (type(k)))
-    
-    return b"%s%s\n%s" % (head, k, tail)
 
 def api_requires_auth(f):
     """Determines if the access token is valid
@@ -170,21 +174,25 @@ def api_requires_auth(f):
         try:
             unverified_header = jwt.get_unverified_header(access_token)
         except jwt.exceptions.DecodeError as e:
-            logger.error('api_requires_auth() invalid header: decode error ' + e.__str__())
+            logger.error('api_requires_auth() decode error ' + e.__str__())
             raise
         except jwt.exceptions.InvalidTokenError:
             logger.error('api_requires_auth() invalid header')
-            raise AuthError({"code": "invalid_header",
-                            "description": "Invalid header. Use an RS256 signed JWT Access Token"}, 401)
+            raise AuthError(
+                {"code": "invalid_header",
+                 "description": "Invalid header. Use RS256 signed JWT"},
+                401)
         if unverified_header["alg"] == "HS256":
             logger.error('api_requires_auth() invalid header alg')
-            raise AuthError({"code": "invalid_header",
-                            "description":
-                                "Invalid header. "
-                                "Use an RS256 signed JWT Access Token"}, 401)
+            raise AuthError(
+                {"code": "invalid_header",
+                 "description": "Invalid header. "
+                                "Use an RS256 signed JWT Access Token"},
+                401)
 
-        # fetch the auth0 well known keys
-        url = "https://" + auth_config['SPA']['auth0_domain'] + "/.well-known/jwks.json"
+        # fetch the well known keys
+        url = str("https://%s/.well-known/jwks.json"
+                  % (auth_config['SPA']['domain']))
         jsonurl = urlopen(url)
         logger.info('api_requires_auth() fetched well known keys from: ' + url)
         data = jsonurl.read()
@@ -204,16 +212,16 @@ def api_requires_auth(f):
                 }
                 break
 
-
         if rsa_key:
             try:
-                logger.info("api_requires_auth() with rsa key for token '%s'" % (access_token))
+                logger.info("api_requires_auth() with rsa key for token '%s'"
+                            % (access_token))
                 payload = jwt.decode(
                     access_token,
                     key=rsa_key,
                     algorithms=["RS256"],
-                    audience=auth_config['SPA']['auth0_audience'],
-                    issuer="https://" + auth_config['SPA']['auth0_domain'] + "/"
+                    audience=auth_config['SPA']['audience'],
+                    issuer="https://" + auth_config['SPA']['domain'] + "/"
                 )
                 logger.info('api_requires_auth() key payload decoded')
             except jwt.exceptions.ExpiredSignatureError:
@@ -223,9 +231,9 @@ def api_requires_auth(f):
             except jwt.exceptions.JWTClaimsError:
                 logger.error('api_requires_auth() invalid claims')
                 raise AuthError({"code": "invalid_claims",
-                                "description":
-                                    "incorrect claims,"
-                                    " please check the audience and issuer"}, 401)
+                                 "description": "incorrect claims,"
+                                 " please check the audience and issuer"},
+                                401)
             except Exception as e:
                 logger.error('api_requires_auth() exception')
                 raise AuthError({"code": "invalid_header",
@@ -259,7 +267,8 @@ def task_list_json_delete_handler():
         response = jsonify(content)
         response.status_code = 200
     except(Storage.StorageException) as e:
-        logger.error("delete all exception '%s' headers:\n%s" % (e.message, request.headers))
+        logger.error("delete all exception '%s' headers:\n%s"
+                     % (e.message, request.headers))
         response = app.make_response(e.message)
         response.status_code = 500
 
@@ -272,16 +281,18 @@ def task_list_json_get_handler():
 
     try:
         if('assigned_by' in request.args):
-            logger.info('getting tasks assigned by user %s' % (g.authd_user['sub']))
+            logger.info('getting tasks assigned by user %s'
+                        % (g.authd_user['sub']))
             content = Storage.fetch_assigned(g.authd_user['sub'])
         else:
-            logger.info('getting tasks assigned to user %s' % (g.authd_user['sub']))
+            logger.info('getting tasks assigned to user %s'
+                        % (g.authd_user['sub']))
             content = Storage.fetch_all(g.authd_user['sub'])
         response = jsonify(content)
         response.status_code = 200
     except(Storage.StorageException) as e:
-        logger.error("fetch all exception '%s' headers:\n%s" % 
-                    (e.message, request.headers))
+        logger.error("fetch all exception '%s' headers:\n%s"
+                     % (e.message, request.headers))
         response = app.make_response(e.message)
         response.status_code = 500
 
@@ -307,8 +318,9 @@ def task_list_json_post_handler():
         response.status_code = 200
 
     except(Storage.StorageException) as e:
-        logger.error("task_list_json_post_handler exception '%s' headers:\n%s" % 
-                    (e.message, request.headers))
+        logger.error("task_list_json_post_handler exception"
+                     " '%s' headers:\n%s"
+                     % (e.message, request.headers))
         response = app.make_response(e.message)
         response.status_code = 500
 
@@ -348,7 +360,7 @@ def task_list_handler():
 
     response = None
 
-    if(g.authd_user != None):
+    if(g.authd_user is not None):
         logger.info('headers: %s' % (request.headers))
         response = task_list_json_handler()
     else:
@@ -372,7 +384,8 @@ def task_json_put_handler():
         response = app.make_response('OK')
         response.status_code = 200
     except(Storage.StorageException) as e:
-        logger.error("task put exception '%s' headers: %s" % (e.message, request.headers))
+        logger.error("task put exception '%s' headers: %s"
+                     % (e.message, request.headers))
         response = app.make_response(e.message)
         response.status_code = 500
 

@@ -66,14 +66,18 @@ class AuthError(Exception):
 
 @app.errorhandler(AuthError)
 def handle_auth_error(ex):
-    logger.error("auth error accessing '%s:%s': %s" % (request.method, request.url, json.dumps(ex.error)))
+    logger.error("auth error accessing '%s:%s': %s"
+                 % (request.method,
+                    request.url, json.dumps(ex.error)))
     response = jsonify(ex.error)
     response.status_code = ex.status_code
     return response
 
+
 @app.errorhandler(Exception)
 def handle_auth_error(ex):
-    logger.error("auth exception accessing '%s:%s': %s" % (request.method, request.url, ex.__str__()))
+    logger.error("auth exception accessing '%s:%s': %s"
+                 % (request.method, request.url, ex.__str__()))
     response = jsonify(ex.__str__())
     response.status_code = 500
     return response
@@ -99,10 +103,12 @@ def get_er_done_script():
 
     return c
 
+
 @app.route('/')
 def index():
 
     return redirect(url_for('get_er_done'))
+
 
 def main():
 

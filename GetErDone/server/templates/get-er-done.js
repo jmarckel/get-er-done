@@ -197,10 +197,10 @@ $(function(){
     loadingSpinner.css('display', 'none');;
 
     var webAuth = new auth0.WebAuth({
-        domain: '{{ auth_config['auth0_domain'] }}',
-        clientID: '{{ auth_config['auth0_client_id'] }}',
-        redirectUri: '{{ auth_config['auth0_login_callback_url'] }}',
-        audience: '{{ auth_config['auth0_audience'] }}',
+        domain: '{{ auth_config['domain'] }}',
+        clientID: '{{ auth_config['client_id'] }}',
+        redirectUri: '{{ auth_config['login_cb_url'] }}',
+        audience: '{{ auth_config['audience'] }}',
         responseType: 'token id_token',
         scope: 'openid',
         leeway: 60
@@ -243,15 +243,16 @@ $(function(){
 
     function logout() {
 
-        // Remove tokens and expiry time from localStorage
+        // Remove auth data from localStorage
         localStorage.removeItem('access_token');
         localStorage.removeItem('id_token');
         localStorage.removeItem('expires_at');
 
+        // this will cause the app to revert to hidden 'no auth' state
         displayButtons();
         displayGetErDoneApp();
 
-        webAuth.logout({returnTo: '{{ auth_config['auth0_logout_callback_url'] }}'}, 
+        webAuth.logout({returnTo: '{{ auth_config['logout_cb_url'] }}'}, 
                        {version: 'v2'});
 
     }
