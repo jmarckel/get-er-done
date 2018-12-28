@@ -223,7 +223,7 @@ $(function(){
 
     function setSession(authResult) {
 
-        // Set the time that the access token will expire at
+        // Set the time when the access token will expire
         var expiresAt = JSON.stringify(
             authResult.expiresIn * 1000 + new Date().getTime()
         );

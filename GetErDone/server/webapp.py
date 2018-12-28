@@ -157,7 +157,8 @@ def webapp_logout():
 
     session.clear()
 
-    params = {'returnTo': auth_config['WEBAPP']['auth0_logout_callback_url'], 'client_id': auth_config['WEBAPP']['auth0_client_id']}
+    params = {'returnTo': auth_config['WEBAPP']['auth0_logout_callback_url'],
+              'client_id': auth_config['WEBAPP']['auth0_client_id']}
 
     return redirect(auth0.base_url + '/v2/logout?' + urllib.urlencode(params))
 
@@ -180,10 +181,8 @@ def api_fetch_assigned_tasks(user_id):
 @app.route('/assigned')
 @webapp_requires_auth
 def assigned():
-    logger.info("in assigned!")
     user_id = session[auth_config['WEBAPP']['auth0_profile_key']]['user_id']
     if(user_id):
-        logger.info("switch to assign for user %s" % (user_id))
         return render_template('get-er-assigned.html',
                                tasks=api_fetch_assigned_tasks(user_id))
     else:
@@ -208,15 +207,11 @@ def api_fetch_users(user_id):
 @webapp_requires_auth
 def create():
 
-    logger.info('create called')
-
     user_id = session[auth_config['WEBAPP']['auth0_profile_key']]['user_id']
 
     if(user_id):
 
         if(request.method == 'POST'):
-
-            logger.info('create task')
 
             data = {}
             data['done'] = False
@@ -230,7 +225,7 @@ def create():
             return redirect(url_for('assigned'))
 
         else:
-            logger.info("switch to create for user %s" % (user_id))
+            logger.info("showing create for user %s" % (user_id))
             return render_template('get-er-created.html',
                                    users=api_fetch_users(user_id))
 
