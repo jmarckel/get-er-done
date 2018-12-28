@@ -392,30 +392,6 @@ def task_json_put_handler():
     return(response)
 
 
-def task_html_handler():
-
-    response = None
-
-    if(request.method == 'PUT'):
-        logger.debug('html update task %s' % (task_id))
-        response = task_html_put_handler()
-
-    elif(request.method == 'GET'):
-        logger.debug('html get task %s' % (task_id))
-        response = task_html_get_handler()
-
-    elif(request.method == 'DELETE'):
-        logger.debug('html delete task %s' % (task_id))
-        response = task_html_delete_handler()
-
-    else:
-        logger.error("task html unknown headers: %s" % (request.headers))
-        response = app.make_response('forbidden')
-        response.status_code = 500
-
-    return(response)
-
-
 # UNUSED ...
 @app.route('/tasks/<uuid:task_id>', methods=['PUT', 'GET', 'DELETE'])
 @cross_origin(headers=["Content-Type", "Authorization"])
