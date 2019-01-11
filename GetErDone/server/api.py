@@ -144,8 +144,7 @@ def get_access_token():
     return token
 
 
-# UNUSED
-def api_requires_scope(required_scope):
+def has_required_scope(required_scope):
     """Determines if the required scope is present in the access token
     Args:
         required_scope (str): The scope required to access the resource
@@ -370,6 +369,30 @@ def task_list_handler():
 
     return(response)
 
+
+@app.route('/assigned', methods=['POST', 'GET', 'DELETE'])
+@cross_origin(headers=["Content-Type", "Authorization"])
+@cross_origin(headers=["Access-Control-Allow-Origin", "*"])
+@api_requires_auth
+def assigned_task_list_handler():
+
+    logger.info("assigned tasks called method = '%s'" % (request.method))
+
+    response = None
+
+    if(g.authd_user is not None):
+        if(has_required_scope('role:manager') is True):
+            response = task_list_json_handler()
+        else:
+            logger.error('authd_user false: %s' % (request.headers))
+            response = app.make_response('forbidden')
+            response.status_code = 500
+    else:
+        logger.error('authd_user false: %s' % (request.headers))
+        response = app.make_response('forbidden')
+        response.status_code = 500
+
+    return(response)
 
 #
 # code associated with individual tasks

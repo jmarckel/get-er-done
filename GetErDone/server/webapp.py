@@ -102,7 +102,7 @@ auth0 = oauth.remote_app(
              consumer_key=auth_config['WEBAPP']['client_id'],
              consumer_secret=auth_config['WEBAPP']['client_secret'],
              request_token_params={
-                 'scope': 'openid profile',
+                 'scope': 'openid profile role:manager',
                  'audience': auth_config['WEBAPP']['audience']
              },
              base_url='https://%s' % (auth_config['WEBAPP']['domain']),
@@ -174,7 +174,7 @@ def api_fetch_assigned_tasks(user_id):
 
     # tasks assigned by user_id
 
-    url = str("%s/tasks?assigned_by=%s"
+    url = str("%s/assigned?assigned_by=%s"
               % (auth_config['WEBAPP']['api_server'], user_id))
     logger.info('fetching tasks from %s' % (url))
 
@@ -201,7 +201,7 @@ def assigned():
 
 
 def api_store_task(user_id, task):
-    url = "%s/tasks" % (auth_config['WEBAPP']['api_server'])
+    url = "%s/assigned" % (auth_config['WEBAPP']['api_server'])
     logger.info('storing a task to %s' % (url))
 
     bearer = session[auth_config['WEBAPP']['profile_key']]['access_token']

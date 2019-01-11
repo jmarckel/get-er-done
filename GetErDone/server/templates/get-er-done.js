@@ -202,7 +202,7 @@ $(function(){
         redirectUri: '{{ auth_config['login_cb_url'] }}',
         audience: '{{ auth_config['audience'] }}',
         responseType: 'token id_token',
-        scope: 'openid',
+        scope: 'openid profile email read:tasks write:tasks',
         leeway: 60
     });
 
@@ -228,6 +228,24 @@ $(function(){
             authResult.expiresIn * 1000 + new Date().getTime()
         );
 
+        var setUserInfo = function(err, user) {
+            if(err) {
+                console.log("ERROR getting user info");
+            } else {
+                var keys = ['email_verified', 'email', 'updated_at',
+                            'name', 'picture', 'user_id', 'nickname',
+                            'created_at', 'sub', 'user_metadata',
+                            'app_metadata', 'http://api.techex.epoxyloaf.com/title',
+                            'http://api.techex.epoxyloaf.com/perms'];
+                for(k in keys) {
+                    console.log("/userinfo: " + keys[k] + "=" + user[keys[k]]);
+                }
+                localStorage.setItem('user_info', user);
+            }
+        }
+
+        webAuth.client.userInfo(authResult.accessToken, setUserInfo);
+
         localStorage.setItem('access_token', authResult.accessToken);
         localStorage.setItem('id_token', authResult.idToken);
         localStorage.setItem('expires_at', expiresAt);
@@ -247,6 +265,7 @@ $(function(){
         localStorage.removeItem('access_token');
         localStorage.removeItem('id_token');
         localStorage.removeItem('expires_at');
+        localStorage.removeItem('user_info');
 
         // this will cause the app to revert to hidden 'no auth' state
         displayButtons();
