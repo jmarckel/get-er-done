@@ -1,5 +1,8 @@
 function (user, context, callback) {
 
+  // This is a contrived rule, meant to demonstrate ordering of
+  // rules and the updating of User Metadata at Auth0
+
   // title should only be set for verified users.
   if (!user.email || !user.email_verified) {
     return callback(null, user, context);
@@ -8,7 +11,26 @@ function (user, context, callback) {
   user.user_metadata = user.user_metadata || {};
 
   const addTitleToUser = function(user) {
+    // look at the email address
+    // split into name and domain parts on '@'
+    // try to split name part on '+'
+    // if RHS of name part contains 'poobah' then title is 'manager'
+    // if RHS of name part contains 'goob' then title is 'supervisor'
+    // if RHS of name part contains 'noob' then title is 'user'
     var user_title = 'user';
+    var tmp = user.email;
+    var parts = tmp.split('@');
+    if(parts.length === 2) {
+      var uparts = parts[0].split('+');
+      if(uparts.length === 2) {
+        if(uparts[1].includes('goob')) {
+          user_title = 'supervisor';
+        }
+        if(uparts[1].includes('poobah')) {
+          user_title = 'manager';
+        }
+      }
+    }
     return(user_title);
   };
 
