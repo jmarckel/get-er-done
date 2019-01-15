@@ -150,9 +150,6 @@ def has_required_scope(required_scope):
         required_scope (str): The scope required to access the resource
     """
 
-    logger.error("has_required_scope ois FORCED TO TRUE!")
-    return(True)
-
     token = get_access_token()
     unverified_claims = jwt.get_unverified_claims(token)
     if unverified_claims.get("scope"):
