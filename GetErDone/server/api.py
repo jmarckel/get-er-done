@@ -157,6 +157,9 @@ def has_required_scope(required_scope):
         for token_scope in token_scopes:
             if token_scope == required_scope:
                 return True
+
+    logger.info("action not supported by scope")
+
     return False
 
 
@@ -332,18 +335,21 @@ def task_list_json_handler():
     response = None
 
     if(request.method == 'POST'):
-        logger.debug('add a new task')
-        response = task_list_json_post_handler()
+        if(has_required_scope('write:tasks') is True):
+            logger.debug('add a new task')
+            response = task_list_json_post_handler()
 
     elif(request.method == 'GET'):
-        logger.debug('list all tasks')
-        response = task_list_json_get_handler()
+        if(has_required_scope('read:tasks') is True):
+            logger.debug('list all tasks')
+            response = task_list_json_get_handler()
 
     elif(request.method == 'DELETE'):
-        logger.debug('delete all tasks')
-        response = task_list_json_delete_handler()
+        if(has_required_scope('delete:tasks') is True):
+            logger.debug('delete all tasks')
+            response = task_list_json_delete_handler()
 
-    else:
+    if( response is None):
         response = app.make_response('forbidden')
         response.status_code = 500
 
@@ -382,7 +388,7 @@ def assigned_task_list_handler():
     response = None
 
     if(g.authd_user is not None):
-        if(has_required_scope('read:tasks') is True):
+        if(has_required_scope('assign:tasks') is True):
             response = task_list_json_handler()
         else:
             logger.error('has_required_scope false: %s' % (request.headers))

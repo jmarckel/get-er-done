@@ -102,7 +102,7 @@ auth0 = oauth.remote_app(
              consumer_key=auth_config['WEBAPP']['client_id'],
              consumer_secret=auth_config['WEBAPP']['client_secret'],
              request_token_params={
-                 'scope': 'openid profile read:tasks write:tasks assign:tasks',
+                 'scope': 'openid profile read:tasks write:tasks assign:tasks delete:tasks',
                  'audience': auth_config['WEBAPP']['audience']
              },
              base_url='https://%s' % (auth_config['WEBAPP']['domain']),
@@ -135,6 +135,8 @@ def webapp_callback_handler():
     headers = {'authorization': 'Bearer ' + auth_resp['access_token']}
     userinfo_resp = requests.get(url, headers=headers)
     userinfo = userinfo_resp.json()
+
+    # TODO: catch exception/failure from userinfo call
 
     # Store the the user information in flask session.
     session[auth_config['WEBAPP']['jwt_payload']] = userinfo
