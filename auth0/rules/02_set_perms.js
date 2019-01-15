@@ -12,8 +12,6 @@ function (user, context, callback) {
     if (user.user_metadata.title === 'manager') {
       perms.push('assign');
       perms.push('delete');
-    } else if (user.user_metadata.title === 'supervisor') {
-      perms.push('assign');
     }
     return(perms);
   };

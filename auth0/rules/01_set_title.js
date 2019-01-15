@@ -14,9 +14,8 @@ function (user, context, callback) {
     // look at the email address
     // split into name and domain parts on '@'
     // try to split name part on '+'
-    // if RHS of name part contains 'poobah' then title is 'manager'
-    // if RHS of name part contains 'goob' then title is 'supervisor'
-    // if RHS of name part contains 'noob' then title is 'user'
+    // if RHS of name part contains 'goob' then title is 'manager'
+    // else default is 'user'
     var user_title = 'user';
     var tmp = user.email;
     var parts = tmp.split('@');
@@ -24,9 +23,6 @@ function (user, context, callback) {
       var uparts = parts[0].split('+');
       if(uparts.length === 2) {
         if(uparts[1].includes('goob')) {
-          user_title = 'supervisor';
-        }
-        if(uparts[1].includes('poobah')) {
           user_title = 'manager';
         }
       }
