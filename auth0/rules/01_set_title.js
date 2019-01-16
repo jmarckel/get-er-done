@@ -11,18 +11,19 @@ function (user, context, callback) {
   user.user_metadata = user.user_metadata || {};
 
   const addTitleToUser = function(user) {
-    // look at the email address
-    // split into name and domain parts on '@'
-    // try to split name part on '+'
-    // if RHS of name part contains 'goob' then title is 'manager'
-    // else default is 'user'
+    // title is determined by the the email address
+    // split the address into name and domain parts on '@'
+    // then try to split the name part on '+'
+    // if the right hand side of the name part contains
+    // 'manager' then title is 'manager', otherwise the
+    // default title is 'user'
     var user_title = 'user';
     var tmp = user.email;
     var parts = tmp.split('@');
     if(parts.length === 2) {
       var uparts = parts[0].split('+');
       if(uparts.length === 2) {
-        if(uparts[1].includes('goob')) {
+        if(uparts[1].includes('manager')) {
           user_title = 'manager';
         }
       }
