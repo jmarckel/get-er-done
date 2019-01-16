@@ -4,9 +4,8 @@
 GetErDone API Authentication and Authorization
 ==============================================
 
-**GetErDone-API Authentication and Authorization** 
 
-The GetErDone API provides REST access to the To-Do
+The **GetErDone API** provides REST access to the To-Do
 lists owned by the the users of various applications.
 
 A primary goal of the API is to make sure that To-Do
@@ -17,7 +16,7 @@ credentials, and Authorization - the user is
 provisioned for a valid set of activities. To meet
 this end, the API uses services provided by Auth0.
 
-Following Oauth2 and OIDC, in terms of Authentication
+Following OAuth2 and OIDC, in terms of Authentication
 and Authorization, we can think of these users as
 "resource owners", the To-Do lists themselves as
 the "resources", and the API server as the "resource
@@ -25,6 +24,7 @@ server".
 
 
 Authentication
+--------------
 
 In the GetErDone API, the resource owner's identity is
 authenticated by examining and validating the OAuth2
@@ -40,6 +40,7 @@ can be trusted as authentic.
 
 
 Authorization
+-------------
 
 The GetErDone API, as the resource server, will grant
 the resource owner access to operations on their
