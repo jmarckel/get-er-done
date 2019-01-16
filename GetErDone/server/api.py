@@ -226,7 +226,9 @@ def api_requires_auth(f):
                     audience=auth_config['SPA']['audience'],
                     issuer="https://" + auth_config['SPA']['domain'] + "/"
                 )
+
                 logger.info('api_requires_auth() key payload decoded')
+
             except jwt.exceptions.ExpiredSignatureError:
                 logger.error('api_requires_auth() expired signature')
                 raise AuthError({"code": "token_expired",
