@@ -3,7 +3,7 @@
 GetErDone API
 =============
 
-The `GetErDone-API`_ is a ReST API service allowing network applications
+The GetErDone-API is a ReST API service allowing network applications
 to interact with lists of tasks assigned to users. Any authenticated user
 is allowed to create and complete tasks for themselves, but only users
 with a manager role may assign tasks to others.
@@ -13,5 +13,3 @@ with a manager role may assign tasks to others.
    api-auth
    api-stack
    api-storage
-
-.. _GetErDone-API: http://api.techex.epoxyloaf.com

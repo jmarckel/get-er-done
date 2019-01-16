@@ -4,6 +4,8 @@
 GetErDone API Authentication and Authorization
 ==============================================
 
+**GetErDone-API Authentication and Authorization** 
+
 The GetErDone API provides REST access to the To-Do
 lists owned by the the users of various applications.
 
@@ -15,10 +17,11 @@ credentials, and Authorization - the user is
 provisioned for a valid set of activities. To meet
 this end, the API uses services provided by Auth0.
 
-In terms of Authentication and Authorization, we can
-think of these users as "resource owners", the To-Do
-lists themselves as "resources", and the API server as
-the "resource server".
+Following Oauth2 and OIDC, in terms of Authentication
+and Authorization, we can think of these users as
+"resource owners", the To-Do lists themselves as
+the "resources", and the API server as the "resource
+server".
 
 
 Authentication
@@ -39,13 +42,14 @@ can be trusted as authentic.
 Authorization
 
 The GetErDone API, as the resource server, will grant
-the resource owner access to operations on the To-Do
-list based on Authorization information contained within
-the set of "claims" made in the verified Access Token.
-These claims include information about the user, as well
-as the operations they are allowed to perform. The claim
-used by the resource server to determine a user is
-authorized to access an operation is called "scope".
+the resource owner access to operations on their
+resources based on Authorization information contained
+within the set of "claims" made in the verified Access
+Token. These claims include information about the user,
+including the operations they are allowed to perform.
+The claim used by the resource server to determine a
+resource owner is authorized to access an operation
+is called "scope".
 
 The GetErDone API provides access using the following
 scopes: 'read:tasks', 'write:tasks', 'assign:tasks', and
@@ -63,4 +67,3 @@ The GetErDone suite makes use of Auth0 Rules to
 filter the scopes available to individual users.
 
 
-**GetErDone-API Authentication and Authorization** 
