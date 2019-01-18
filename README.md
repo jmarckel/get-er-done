@@ -36,7 +36,13 @@ Click <a href="http://spa.techex.epoxyloaf.com" class="reference external">here<
 
 **GetErDone-SPA** uses the Implicit Grant type from the OAuth 2.0 authorization framework, and authentication with OpenID Connect, using services provided by Auth0.
 
-The Implicit Grant flow is initiated by redirecting the user to the GetErDone-SPA url that ultimately loads a JavaScript application designed to load once and run in the user’s browser. Here the user may choose to log in to the application, where a dialog is loaded allowing the user to provide credentials to Auth0, or alternatively choose any other configured identity provider. Once authenticated, Auth0 will then issue the application an Access Token which will be stored and used as credentials for calls to the GetErDone-API.
+The Implicit Grant flow is initiated by the JavaScript application which is designed to load once and run in the user’s browser. Here the user may choose to log in to the application, where a dialog is loaded allowing the user to provide credentials to Auth0, or alternatively choose any other configured identity provider. Once authenticated, Auth0 will then issue the application an Access Token which will be stored and used as credentials for calls to the GetErDone-API.
+
+The GetErDone suite uses OIDC scope claims to authorize users access to the various services provided by the GetErDone-API. These scopes are encoded into the Access Token which is used by the SPA to make calls to the API on behalf of the user.
+
+The GetErDone-SPA will request the following GetErDone-API scopes:  
+-   read:tasks
+-   write:tasks
 
 <span id="document-spa-stack"></span>
 <span id="spa-stack"></span>
@@ -75,7 +81,7 @@ The Authorization Code flow is initiated by redirecting the user to the Auth0 /a
 
 The GetErDone suite uses OIDC scope claims to authorize users access to the various services provided by the GetErDone-API. These scopes are encoded into the Authorization header which is used by the webapp to make calls to the API on behalf of the user.
 
-The GetErDone-WebApp will request the following scopes:  
+The GetErDone-WebApp will request the following GetErDone-API scopes:  
 -   read:tasks
 -   write:tasks
 -   delete:tasks

@@ -24,7 +24,7 @@ various services provided by the GetErDone-API. These scopes are encoded into
 the Authorization header which is used by the webapp to make calls to the
 API on behalf of the user.
 
-The GetErDone-WebApp will request the following scopes:
+The GetErDone-WebApp will request the following GetErDone-API scopes:
     * read:tasks
     * write:tasks
     * delete:tasks
