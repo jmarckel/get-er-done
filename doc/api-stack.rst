@@ -4,4 +4,6 @@
 GetErDone API Stack
 ===================
 
-**GetErDone-API** is a ReST API Apache2 WSGI Python Flask ...
+**GetErDone-API** is a ReST API served on Apache2 with
+WSGI to a Python Flask application using authentication
+and authorization services provided by Auth0 ...

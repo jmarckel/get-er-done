@@ -96,7 +96,7 @@ def get_er_done():
 @app.route('/get-er-done/script')
 def get_er_done_script():
 
-    logger.info('serving get-er-donejs template')
+    logger.info('serving get-er-done.js template')
 
     # only pass the SPA config to avoid risk of exposing WEBAPP secrets
     c = render_template('get-er-done.js', auth_config=auth_config['SPA'])
