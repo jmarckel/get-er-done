@@ -10,11 +10,12 @@ using `OAuth2`_ and `OpenID_Connect`_.
 .. _OAuth2: https://en.wikipedia.org/wiki/OAuth
 .. _OpenID_Connect: https://en.wikipedia.org/wiki/OpenID_Connect
 
-This free demo site is hosted on `AWS`_ and uses third party authentication
+`This`_ free demo site is hosted on `AWS`_ and uses third party authentication
 services provided by `Auth0`_.
 
 .. _AWS: https://aws.amazon.com
 .. _Auth0: https://auth0.com
+.. _This: http://techex.epoxyloaf.com
 
 The project is broken into three main applications, each making use of a
 specific implementation method to demonstrate the different authentication

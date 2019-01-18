@@ -7,7 +7,7 @@ GetErDone<a href="#geterdone" class="headerlink" title="Permalink to this headli
 
 **GetErDone** is a technical exercise designed to demonstrate use cases for authorization and authentication workflows of network based applications using <a href="https://en.wikipedia.org/wiki/OAuth" class="reference external">OAuth2</a> and <a href="https://en.wikipedia.org/wiki/OpenID_Connect" class="reference external">OpenID_Connect</a>.
 
-This free demo site is hosted on <a href="https://aws.amazon.com" class="reference external">AWS</a> and uses third party authentication services provided by <a href="https://auth0.com" class="reference external">Auth0</a>.
+<a href="http://techex.epoxyloaf.com" class="reference external">This</a> free demo site is hosted on <a href="https://aws.amazon.com" class="reference external">AWS</a> and uses third party authentication services provided by <a href="https://auth0.com" class="reference external">Auth0</a>.
 
 The project is broken into three main applications, each making use of a specific implementation method to demonstrate the different authentication and authorization key flows. Together these applications form a suite of tools that allow managers to create tasks, assigning them to users, and also allowing users to view their own assigned tasks, create their own tasks, and mark their tasks completed.
 
@@ -20,7 +20,7 @@ In either case, you should get an email from a user techex-epoxyloaf-com includi
 GetErDone SPA<a href="#geterdone-spa" class="headerlink" title="Permalink to this headline">¶</a>
 -------------------------------------------------------------------------------------------------
 
-**GetErDone-SPA** is a JavaScript based single page application that allows authenticated users to interact with a list of assigned tasks. These tasks may be assigned by the GetErDone-webapp or created on their own. Once a user has completed a task, they may mark it done in the application.
+**GetErDone-SPA** is a JavaScript based single page application that allows authenticated users to interact with a list of assigned tasks. These tasks may be assigned by the GetErDone-WebApp or created on their own. Once a user has completed a task, they may mark it done in the application.
 
 In order to use this application for the first time, you will need to create a user. To create a new user, use the ‘Sign Up’ tab on the login screen, and enter an email address. To create multiple accounts, enter an email address where the username is split with the plus (‘+’) sign.
 
