@@ -148,6 +148,8 @@ def webapp_callback_handler():
         'access_token': auth_resp['access_token']
     }
 
+    # TODO: if the user email is not verified, park them with a reminder
+
     return redirect('/assigned')
 
 
