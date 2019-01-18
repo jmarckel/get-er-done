@@ -9,7 +9,7 @@ authorization framework, and authentication with OpenID Connect, using Auth0
 as an identity provider.
 
 The Authorization Code flow is initiated by redirecting the user to the
-Auth0 /authorize endpoint cooresponding to the GetErDone-WebApp. Here the
+Auth0 /authorize endpoint corresponding to the GetErDone-WebApp. Here the
 user enters credentials to Auth0, or alternatively chooses any other configured
 identity provider. Once authenticated, Auth0 will then redirect the user back
 GetErDone-WebApp, where session information can be verified and recorded, 

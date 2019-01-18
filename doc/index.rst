@@ -32,7 +32,7 @@ the word to the right of the '+' includes the word 'manager'. So the user
 `jeff+the_manager_guy@epoxyloaf.com` would have the title 'manager'.
 
 In either case, you should get an email from a user `techex-epoxyloaf-com`
-includng instructions (click one link) on how to complete the registration
+including instructions (click one link) on how to complete the registration
 process, before the free account can be accessed.
 
 .. toctree::

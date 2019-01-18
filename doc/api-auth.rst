@@ -11,7 +11,7 @@ lists owned by the the users of various applications.
 A primary goal of the API is to make sure that To-Do
 list tasks are only accessed by the users that own
 them. This goal can be met using concepts of
-Authenication - the user has provided valid
+Authentication - the user has provided valid
 credentials, and Authorization - the user is
 provisioned for a valid set of activities. To meet
 this end, the API uses services provided by Auth0.

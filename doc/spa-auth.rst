@@ -9,7 +9,7 @@ authorization framework, and authentication with OpenID Connect,
 using services provided by Auth0.
 
 The Implicit Grant flow is initiated by redirecting the user to the
-GetErDone-SPA url that utlimately loads a JavaScript application
+GetErDone-SPA url that ultimately loads a JavaScript application
 designed to load once and run in the user's browser. Here the
 user may choose to log in to the application, where a dialog
 is loaded allowing the user to provide credentials to Auth0, or
