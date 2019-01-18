@@ -136,4 +136,4 @@ The GetErDone suite makes use of Auth0 Rules to filter the scopes available to i
 
 -   [GetErDone](index.html#document-index) »
 
-© Copyright 2018, Jeff Marckel. Created using [Sphinx](http://sphinx-doc.org/) 1.3.6.
+© Copyright 2018, Jeff Marckel.
