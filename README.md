@@ -13,7 +13,7 @@ The project is broken into three main applications, each making use of a specifi
 
 For the purposes of this demonstration site, access to the applications and API is based on a users ‘title’, which is set based on the email address that the user registers with. To create a user with the ‘manager’ title, use an email address where the username is split with the plus (‘+’) sign, and the word to the right of the ‘+’ includes the word ‘manager’. So the user jeff@epoxyloaf.com would have the title ‘user’, and the user jeff+the\_manager\_guy@epoxyloaf.com would have the title ‘manager’.
 
-In either case, you should get an email from a user techex-epoxyloaf-com includng instructions (click one link) on how to complete the registration process, before the free account can be accessed.
+In either case, you should get an email from a user techex-epoxyloaf-com including instructions (click one link) on how to complete the registration process, before the free account can be accessed.
 
 <span id="document-spa"></span>
 <span id="spa"></span>
@@ -36,7 +36,7 @@ Click <a href="http://spa.techex.epoxyloaf.com" class="reference external">here<
 
 **GetErDone-SPA** uses the Implicit Grant type from the OAuth 2.0 authorization framework, and authentication with OpenID Connect, using services provided by Auth0.
 
-The Implicit Grant flow is initiated by redirecting the user to the GetErDone-SPA url that utlimately loads a JavaScript application designed to load once and run in the user’s browser. Here the user may choose to log in to the application, where a dialog is loaded allowing the user to provide credentials to Auth0, or alternatively choose any other configured identity provider. Once authenticated, Auth0 will then issue the application an Access Token which will be stored and used as credentials for calls to the GetErDone-API.
+The Implicit Grant flow is initiated by redirecting the user to the GetErDone-SPA url that ultimately loads a JavaScript application designed to load once and run in the user’s browser. Here the user may choose to log in to the application, where a dialog is loaded allowing the user to provide credentials to Auth0, or alternatively choose any other configured identity provider. Once authenticated, Auth0 will then issue the application an Access Token which will be stored and used as credentials for calls to the GetErDone-API.
 
 <span id="document-spa-stack"></span>
 <span id="spa-stack"></span>
@@ -71,7 +71,7 @@ Click <a href="http://webapp.techex.epoxyloaf.com" class="reference external">he
 
 **GetErDone-WebApp** uses the Authorization Code grant type from the OAuth 2.0 authorization framework, and authentication with OpenID Connect, using Auth0 as an identity provider.
 
-The Authorization Code flow is initiated by redirecting the user to the Auth0 /authorize endpoint cooresponding to the GetErDone-WebApp. Here the user enters credentials to Auth0, or alternatively chooses any other configured identity provider. Once authenticated, Auth0 will then redirect the user back GetErDone-WebApp, where session information can be verified and recorded, before sending the user on to the application itself.
+The Authorization Code flow is initiated by redirecting the user to the Auth0 /authorize endpoint corresponding to the GetErDone-WebApp. Here the user enters credentials to Auth0, or alternatively chooses any other configured identity provider. Once authenticated, Auth0 will then redirect the user back GetErDone-WebApp, where session information can be verified and recorded, before sending the user on to the application itself.
 
 An access token is also stored, to be used as credentials for calls to the GetErDone-API.
 
@@ -94,7 +94,7 @@ The GetErDone-API is a ReST API service allowing network applications to interac
 
 The **GetErDone API** provides REST access to the To-Do lists owned by the the users of various applications.
 
-A primary goal of the API is to make sure that To-Do list tasks are only accessed by the users that own them. This goal can be met using concepts of Authenication - the user has provided valid credentials, and Authorization - the user is provisioned for a valid set of activities. To meet this end, the API uses services provided by Auth0.
+A primary goal of the API is to make sure that To-Do list tasks are only accessed by the users that own them. This goal can be met using concepts of Authentication - the user has provided valid credentials, and Authorization - the user is provisioned for a valid set of activities. To meet this end, the API uses services provided by Auth0.
 
 Following OAuth2 and OIDC, in terms of Authentication and Authorization, we can think of these users as “resource owners”, the To-Do lists themselves as the “resources”, and the API server as the “resource server”.
 
