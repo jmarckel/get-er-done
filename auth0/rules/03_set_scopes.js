@@ -5,7 +5,7 @@ function (user, context, callback) {
   // restrict any scope starting with (read:|write:|delete:|assign:)
   // and ending in 'tasks' to the permissions in user.app_metadata.perms[]
   const setScopesForUser = function(user, scopes_requested) {
-    var perms = user.app_metadata.perms;
+    var perms = user.app_metadata.perms || [];
     var user_scopes = [];
     var req_scopes = scopes_requested.split(' ');
     for (var i = 0; i < req_scopes.length; i++) {
