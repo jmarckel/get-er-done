@@ -5,7 +5,7 @@ GetErDone API Authentication and Authorization
 ==============================================
 
 
-The **GetErDone API** provides REST access to the To-Do
+The **GetErDone-API** provides REST access to the To-Do
 lists owned by the the users of various applications.
 
 A primary goal of the API is to make sure that To-Do
@@ -26,7 +26,7 @@ server".
 Authentication
 --------------
 
-In the GetErDone API, the resource owner's identity is
+In the GetErDone-API, the resource owner's identity is
 authenticated by examining and validating the OAuth2
 Access Token provided in the HTTP Authorization header.
 
@@ -42,7 +42,7 @@ can be trusted as authentic.
 Authorization
 -------------
 
-The GetErDone API, as the resource server, will grant
+The GetErDone-API, as the resource server, will grant
 the resource owner access to operations on their
 resources based on Authorization information contained
 within the set of "claims" made in the verified Access
@@ -52,9 +52,12 @@ The claim used by the resource server to determine a
 resource owner is authorized to access an operation
 is called "scope".
 
-The GetErDone API provides access using the following
-scopes: 'read:tasks', 'write:tasks', 'assign:tasks', and
-'delete:tasks'.
+The GetErDone-API provides access using the following
+scopes:
+    * read:tasks
+    * write:tasks
+    * assign:tasks
+    * delete:tasks
 
 The GetErDone SPA makes use of the 'read:tasks' and 
 'write:tasks' scopes to allow a user to view, update,
